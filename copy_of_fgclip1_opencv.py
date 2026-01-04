@@ -2494,41 +2494,53 @@ plt.tight_layout()
 plt.show()
 
 
-# Step 4: 12 Transformer Blocks (FIXED)
-print("\nStep 4: 12 Transformer Blocks (8 attention heads each)")
-print("  Processing [1, 77, 512] through 12 transformer layers...")
+# ===================================================================
+# REVISED STEP 4: TEXT ENCODER (Visualizing the [SEP] Token)
+# ===================================================================
+print("\nStep 4: 12 Transformer Blocks (Visualizing [SEP] Aggregation)")
+print("  Processing tokens through 12 causal transformer layers...")
 
+# 1. Run the Text Model
 with torch.no_grad():
-    # Need to pass walk_short_pos for this custom model
     text_outputs = model.text_model(
-        input_ids=input_ids,
-        walk_short_pos=walk_short_pos,  # ← ADD THIS
+        input_ids=text_inputs['input_ids'],
+        attention_mask=text_inputs['attention_mask'],
         output_hidden_states=True,
-        return_dict=True
+        return_dict=True,
+        walk_short_pos=walk_short_pos
     )
-    last_hidden_text = text_outputs.last_hidden_state  # [1, 77, 512]
-    print(f"  After transformers: {last_hidden_text.shape}")
 
-# Visualize transformer processing (matching vision encoder style)
+# 2. Identify the [SEP] / [EOT] Token Index
+# For each sequence, find the last non-padding token index
+eot_indices = text_inputs['attention_mask'].sum(dim=1) - 1
+eot_idx = eot_indices[0].item()
+
+print(f"  Text Sequence Length: {text_inputs['input_ids'].shape[1]}")
+print(f"  End-of-Text [SEP] Token is at Index: {eot_idx}")
+print("  (This is the token that aggregates the full sentence meaning)")
+
+# 3. Extract [SEP] Token Evolution through layers
+# Stack them: [13 layers, Batch, Seq, Dim] -> [13, Dim]
+hidden_states = text_outputs.hidden_states
+sep_evolution = torch.stack([layer[0, eot_idx, :100].detach().cpu() for layer in hidden_states[1:]])
+
+# 4. Visualization: Evolution of the [SEP] Token
 fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-# [CLS] token evolution through 12 layers
-if hasattr(text_outputs, 'hidden_states') and text_outputs.hidden_states:
-    cls_evolution_text = torch.stack([h[0, 0, :100].cpu() for h in text_outputs.hidden_states[1:]])  # Skip initial embedding
+# Left Panel: [SEP] Evolution Heatmap
+import seaborn as sns
+sns.heatmap(sep_evolution.numpy(), cmap='viridis', ax=axes[0], cbar_kws={'label': 'Activation Value'})
+axes[0].set_xlabel('Embedding Dimension (First 100)', fontsize=11)
+axes[0].set_ylabel('Transformer Layer (1-12)', fontsize=11)
+axes[0].set_title('Evolution of [SEP] Token (Sentence Summary)\nThrough 12 Layers', fontweight='bold', fontsize=12)
 
-    sns.heatmap(cls_evolution_text.numpy(), cmap='RdBu_r', ax=axes[0], cbar_kws={'label': 'Value'})
-    axes[0].set_xlabel('Embedding Dimension (first 100)', fontsize=11)
-    axes[0].set_ylabel('Transformer Block (1-12)', fontsize=11)
-    axes[0].set_title('Step 4: [CLS] Token Evolution\nThrough 12 Text Transformer Blocks',
-                     fontweight='bold', fontsize=13)
-
-# All token embeddings after transformers
-text_viz = last_hidden_text[0, :30, :100].cpu().numpy()  # Show first 30 tokens
+# Right Panel: All Token Embeddings (Last Layer)
+last_hidden_text = text_outputs.last_hidden_state
+text_viz = last_hidden_text[0, :30, :100].cpu().numpy()  # First 30 tokens
 sns.heatmap(text_viz, cmap='viridis', ax=axes[1], cbar_kws={'label': 'Value'})
-axes[1].set_xlabel('Embedding Dimension (first 100)', fontsize=11)
-axes[1].set_ylabel('Token Position (first 30 of 77)', fontsize=11)
-axes[1].set_title('All Token Embeddings After Transformers\n[77, 512]',
-                 fontweight='bold', fontsize=13)
+axes[1].set_xlabel('Embedding Dimension (First 100)', fontsize=11)
+axes[1].set_ylabel('Token Position', fontsize=11)
+axes[1].set_title('All Token Embeddings After Transformers\n(Note causality: earlier tokens cannot see later ones)', fontweight='bold', fontsize=12)
 
 plt.tight_layout()
 plt.show()
@@ -2548,25 +2560,45 @@ ax.grid(alpha=0.3)
 plt.tight_layout()
 plt.show()
 
-# Step 6: Linear Projection to 512D (Text)
-print("\nStep 6: Linear Projection (Text CLS → 512D shared space)")
-with torch.no_grad():
-    text_feature = model.get_text_features(input_ids, walk_short_pos=walk_short_pos)
-    print(f"  Projected text feature shape: {text_feature.shape}")  # [1, 512]
+# ===================================================================
+# REVISED STEP 6: TEXT PROJECTION (Using [SEP] Token)
+# ===================================================================
+print("\nStep 6: Linear Projection (Text [SEP] → 512D shared space)")
 
+# 1. Identify the [SEP] index again
+eot_indices = text_inputs['attention_mask'].sum(dim=1) - 1
+eot_idx = eot_indices[0].item()
+
+# 2. Extract the Raw [SEP] Token (Before Projection)
+raw_sep_token = text_outputs.last_hidden_state[0, eot_idx, :] 
+
+# 3. Get the Projected 512D Feature
+with torch.no_grad():
+    text_feature = model.get_text_features(text_inputs['input_ids'], 
+                                          attention_mask=text_inputs['attention_mask'],
+                                          walk_short_pos=walk_short_pos)
+
+print(f"  Raw [SEP] Token Shape: {raw_sep_token.shape}")
+print(f"  Projected Feature Shape: {text_feature.shape}")
+
+# 4. Visualize Before vs. After
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-axes[0].bar(range(100), cls_token_text[0, :100].cpu().numpy(),
+
+# Plot Raw [SEP]
+axes[0].bar(range(100), raw_sep_token[:100].detach().cpu().numpy(), 
             color='#2A9D8F', alpha=0.7)
-axes[0].set_title('Text CLS Before Projection\n512D (first 100 dims)')
+axes[0].set_title('Text [SEP] Token Before Projection\n(Transformer Output)', fontweight='bold')
 axes[0].set_xlabel('Dimension'); axes[0].set_ylabel('Value'); axes[0].grid(axis='y', alpha=0.3)
 
-axes[1].bar(range(100), text_feature[0, :100].cpu().numpy(),
+# Plot Projected 512D
+axes[1].bar(range(100), text_feature[0, :100].cpu().numpy(), 
             color='#264653', alpha=0.7)
-axes[1].set_title('Text Embedding After Projection\n512D (first 100 dims)')
+axes[1].set_title('Text Embedding After Projection\n(512D Shared Space)', fontweight='bold')
 axes[1].set_xlabel('Dimension'); axes[1].set_ylabel('Value'); axes[1].grid(axis='y', alpha=0.3)
 
-plt.suptitle('Text: Raw CLS vs Projected 512D Embedding')
-plt.tight_layout(); plt.show()
+plt.suptitle('Step 6: Projection of the Aggregate [SEP] Token', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.show()
 
 
 # Step 6: L2 Normalization - Text Embedding [1, 512]
