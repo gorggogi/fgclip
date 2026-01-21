@@ -1110,12 +1110,123 @@ print(f"  - Similarity score: {similarity_score:.4f}")
 
 print("\n" + "="*70)
 print("MODEL PIPELINE SHAPES (High-Level)")
+# ===================================================================
+#  FIGURE: RAW VS NORMALIZED EMBEDDING COMPARISON
+# ===================================================================
+print("\n" + "="*70)
+print("VISUALIZING NORMALIZATION EFFECT (Raw vs L2-Normalized)")
 print("="*70)
-print(f"  pixel_values:            {pixel_values.shape}              # [1, 3, 224, 224]")
-print(f"  text input_ids:          {text_inputs['input_ids'].shape}  # [1, seq_len]")
-print(f"  text attention_mask:     {text_inputs['attention_mask'].shape}")
-print(f"  normalized image_embeds: {image_embedding.shape}")
-print(f"  normalized text_embeds:  {text_embedding.shape}")
+
+import matplotlib.pyplot as plt
+import torch.nn.functional as F
+import numpy as np
+
+# 1. Ensure embeddings are computed
+with torch.no_grad():
+    # Get Raw Features
+    image_feature_raw = model.get_image_features(pixel_values)
+    text_feature_raw  = model.get_text_features(input_ids, walk_short_pos=walk_short_pos)
+
+    # Calculate Raw Norms (for display)
+    img_norm_val = torch.norm(image_feature_raw, p=2, dim=1).item()
+    txt_norm_val = torch.norm(text_feature_raw, p=2, dim=1).item()
+
+    # Apply Normalization
+    image_embedding_norm = F.normalize(image_feature_raw, p=2, dim=1)
+    text_embedding_norm  = F.normalize(text_feature_raw,  p=2, dim=1)
+
+# 2. Prepare Data for Plotting (First 50 dimensions for clarity)
+dims_to_show = 50
+x_axis = np.arange(dims_to_show)
+
+# Image Data
+img_raw_np  = image_feature_raw[0, :dims_to_show].cpu().numpy()
+img_norm_np = image_embedding_norm[0, :dims_to_show].cpu().numpy()
+
+# Text Data
+txt_raw_np  = text_feature_raw[0, :dims_to_show].cpu().numpy()
+txt_norm_np = text_embedding_norm[0, :dims_to_show].cpu().numpy()
+
+# 3. Create the Figure (2 Rows, 2 Columns)
+fig, axes = plt.subplots(2, 2, figsize=(16, 10))
+plt.subplots_adjust(hspace=0.4)
+
+# --- ROW 1: IMAGE EMBEDDINGS ---
+
+# Top-Left: Image Raw
+axes[0, 0].bar(x_axis, img_raw_np, color='#E53935', alpha=0.7)
+axes[0, 0].set_title(f'Image: Raw Linear Output\n(Magnitude ||v|| = {img_norm_val:.4f})', fontweight='bold', fontsize=12)
+axes[0, 0].set_ylabel('Raw Value (Large Range)', fontsize=10)
+axes[0, 0].grid(axis='y', alpha=0.3)
+
+# Top-Right: Image Normalized
+axes[0, 1].bar(x_axis, img_norm_np, color='#FF5252', alpha=0.7)
+axes[0, 1].set_title(f'Image: After L2 Normalization\n(Magnitude ||v|| = 1.0000)', fontweight='bold', fontsize=12)
+axes[0, 1].set_ylabel('Normalized Value (Small Range)', fontsize=10)
+axes[0, 1].set_ylim(-0.2, 0.2) # Fixed scale to show smallness
+axes[0, 1].grid(axis='y', alpha=0.3)
+
+# --- ROW 2: TEXT EMBEDDINGS ---
+
+# Bottom-Left: Text Raw
+axes[1, 0].bar(x_axis, txt_raw_np, color='#1E88E5', alpha=0.7)
+axes[1, 0].set_title(f'Text: Raw Linear Output\n(Magnitude ||v|| = {txt_norm_val:.4f})', fontweight='bold', fontsize=12)
+axes[1, 0].set_ylabel('Raw Value (Large Range)', fontsize=10)
+axes[1, 0].set_xlabel('Dimension Index (First 50)', fontsize=11)
+axes[1, 0].grid(axis='y', alpha=0.3)
+
+# Bottom-Right: Text Normalized
+axes[1, 1].bar(x_axis, txt_norm_np, color='#42A5F5', alpha=0.7)
+axes[1, 1].set_title(f'Text: After L2 Normalization\n(Magnitude ||v|| = 1.0000)', fontweight='bold', fontsize=12)
+axes[1, 1].set_ylabel('Normalized Value (Small Range)', fontsize=10)
+axes[1, 1].set_xlabel('Dimension Index (First 50)', fontsize=11)
+axes[1, 1].set_ylim(-0.2, 0.2) # Fixed scale
+axes[1, 1].grid(axis='y', alpha=0.3)
+
+# Final Touches
+plt.suptitle('Effect of L2 Normalization on FG-CLIP Embeddings\n(Scaling 512D vectors to Unit Length)', fontsize=16, fontweight='bold', y=0.96)
+plt.show()
+
+# ===================================================================
+#  PRINT RAW & NORMALIZED EMBEDDING VALUES
+# ===================================================================
+print("\n" + "="*70)
+print("DEBUG: EMBEDDING VALUES (BEFORE VS AFTER NORMALIZATION)")
+print("="*70)
+
+import torch.nn.functional as F
+
+# Re-compute embeddings to ensure variables are in scope (Redundant but safe)
+# These variables are defined earlier in the script
+processed = image_processor(resized_image, return_tensors="pt")
+pixel_values = processed["pixel_values"].to(device)  # (1, 3, 224, 224)
+
+text_inputs = tokenizer(
+    [text_description],
+    truncation=True,
+    max_length=text_max_len,
+    padding="max_length",
+    return_tensors="pt"
+)
+input_ids = text_inputs["input_ids"].to(device)
+
+with torch.no_grad():
+    image_feature = model.get_image_features(pixel_values)
+    text_feature  = model.get_text_features(input_ids, walk_short_pos=walk_short_pos)
+
+image_embedding = F.normalize(image_feature, p=2, dim=1)
+text_embedding  = F.normalize(text_feature,  p=2, dim=1)
+
+print("Image Embeddings:")
+print("Before L2 Normalization (First 20 values):", image_feature[0, :20].cpu().numpy().tolist())
+print("After L2 Normalization (First 20 values): ", image_embedding[0, :20].cpu().numpy().tolist())
+
+print("\nText Embeddings:")
+print("Before L2 Normalization (First 20 values):", text_feature[0, :20].cpu().numpy().tolist())
+print("After L2 Normalization (First 20 values): ", text_embedding[0, :20].cpu().numpy().tolist())
+
+# Note: Printing the full list (512 items) is possible but will flood the console.
+# Use .tolist() on the full tensor if you strictly need all 512 values.
 
 # ===================================================================
 # CLEAN 3-PANEL VISUALIZATION
@@ -1973,6 +2084,7 @@ plt.figtext(0.5, -0.05,
 plt.tight_layout()
 plt.show()
 
+
 # ===================================================================
 # STEP-BY-STEP ARCHITECTURE VISUALIZATION
 # ===================================================================
@@ -2460,7 +2572,7 @@ fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 if hasattr(text_outputs, 'hidden_states') and text_outputs.hidden_states:
     # Calculate index of [EOS] token (last real token)
     eot_idx = text_inputs['attention_mask'][0].sum().item() - 1
-    
+
     # Extract that specific token from every layer
     eos_evolution_text = torch.stack([h[0, eot_idx, :100].cpu() for h in text_outputs.hidden_states[1:]])
 
@@ -2780,3 +2892,247 @@ plt.suptitle(f"Query: '{query_text}'\nFGCLIP v1 similarity to 4 uploaded images"
              fontsize=14, fontweight='bold')
 plt.tight_layout()
 plt.show()
+
+# ===================================================================
+#  FIGURE 3.2.19: EXTRACTED [EOS] TOKEN VALUES (STYLED TEXT)
+# ===================================================================
+print("\n" + "="*70)
+print("GENERATING FIGURE 3.2.19 (EXTRACTED TOKEN VALUES)")
+print("="*70)
+
+import matplotlib.pyplot as plt
+import torch
+
+# 1. Helper function to format the vector string
+def fmt_vec_full(tensor, count=8):
+    # Convert to list
+    vals = tensor.detach().cpu().numpy().flatten().tolist()
+    # Format first 'count' numbers
+    start = ", ".join([f"{v:.4f}" for v in vals[:count]])
+    # Format last value
+    end = f"{vals[-1]:.4f}"
+    return f"[{start}, ..., {end}]"
+
+# 2. Get the data (Ensure 'eos_token_text' is available from Step 5)
+# If running this standalone, we re-extract it briefly:
+with torch.no_grad():
+    # Run text encoder to get hidden states
+    text_outputs = model.text_model(
+        input_ids=input_ids,
+        walk_short_pos=walk_short_pos,
+        output_hidden_states=True,
+        return_dict=True
+    )
+    # Find EOS position
+    eot_idx = text_inputs['attention_mask'][0].sum().item() - 1
+    # Extract the vector [1, 512]
+    eos_token_vec = text_outputs.last_hidden_state[:, eot_idx, :]
+
+# 3. Create the Text Content
+eos_values_str = fmt_vec_full(eos_token_vec)
+eos_norm = torch.norm(eos_token_vec, p=2).item()
+
+content = (
+    "Extracted [EOS] Token Vector (Summary of Text):\n"
+    "------------------------------------------------\n"
+    f"Shape    : [1, 512]\n"
+    f"Magnitude: {eos_norm:.4f} (Before Projection)\n\n"
+    "First 8 Values + Last Value:\n"
+    f"{eos_values_str}"
+)
+
+# 4. Create the Figure
+fig, ax = plt.subplots(figsize=(10, 4))
+ax.axis('off')
+
+# Beige box style
+bbox_props = dict(boxstyle="round,pad=1", fc="#FDF5E6", ec="#8B7D6B", lw=1.5, alpha=1.0)
+
+# Place text
+ax.text(0.5, 0.5, content, ha="center", va="center", size=13,
+        family="monospace", weight="medium", bbox=bbox_props)
+
+# Add Caption
+plt.figtext(0.5, 0.05, "Figure 3.2.19. Extracted [EOS] Token Values [1, 512]",
+            ha="center", fontsize=12, fontweight='bold')
+
+plt.tight_layout()
+plt.show()
+
+# ===================================================================
+#  GENERATE FIGURE: BEFORE VS AFTER LINEAR PROJECTION (TEXT VALUES)
+# ===================================================================
+print("\n" + "="*70)
+print("GENERATING STYLED FIGURE: LINEAR PROJECTION")
+print("="*70)
+
+import matplotlib.pyplot as plt
+import torch
+
+# 1. Helper to format list string
+def fmt_vec(tensor, count=4):
+    vals = tensor.detach().cpu().numpy().flatten().tolist()
+    # Format first few numbers
+    s = ", ".join([f"{v:.4f}" for v in vals[:count]])
+    # Format last number
+    last = vals[-1]
+    return f"[{s}, ..., {last:.4f}]"
+
+# 2. Extract Data (Re-running specific steps to isolate "Before" state)
+with torch.no_grad():
+    # --- IMAGE PATH ---
+    # 1. Run Vision Transformer (Backbone) -> Output is [1, 197, 768]
+    vision_out = model.vision_model(pixel_values)
+    # 2. Extract [CLS] Token (Index 0) -> This is "Before Projection"
+    image_pre_proj = vision_out.last_hidden_state[:, 0, :]  # Shape: [1, 768]
+    # 3. Run Projection Layer (via helper) -> This is "After Projection"
+    image_post_proj = model.get_image_features(pixel_values) # Shape: [1, 512]
+
+    # --- TEXT PATH ---
+    # 1. Run Text Transformer (Backbone) -> Output is [1, 77, 512]
+    text_out = model.text_model(
+        input_ids=input_ids,
+        walk_short_pos=walk_short_pos,
+        output_hidden_states=True,
+        return_dict=True
+    )
+    # 2. Find [EOS] Token Index
+    eot_idx = text_inputs['attention_mask'][0].sum().item() - 1
+    # 3. Extract [EOS] Token -> This is "Before Projection"
+    text_pre_proj = text_out.last_hidden_state[:, eot_idx, :] # Shape: [1, 512]
+    # 4. Run Projection Layer (via helper) -> This is "After Projection"
+    text_post_proj = model.get_text_features(input_ids, walk_short_pos=walk_short_pos) # Shape: [1, 512]
+
+# 3. Create the Text Content
+content = (
+    "IMAGE ENCODER (ViT-B/32):\n"
+    "Step: Projection from Vision Space to Shared Space\n"
+    "--------------------------------------------------\n"
+    f"Before Projection (768D): {fmt_vec(image_pre_proj)}\n"
+    f"After Projection  (512D): {fmt_vec(image_post_proj)}\n"
+    f"                  (Note: Dimension reduced 768 -> 512)\n\n"
+    "TEXT ENCODER (Transformer):\n"
+    "Step: Projection from Text Space to Shared Space\n"
+    "--------------------------------------------------\n"
+    f"Before Projection (512D): {fmt_vec(text_pre_proj)}\n"
+    f"After Projection  (512D): {fmt_vec(text_post_proj)}"
+)
+
+# 4. Create the Figure
+fig, ax = plt.subplots(figsize=(11, 5))
+ax.axis('off')
+
+# Define the beige box style
+bbox_props = dict(boxstyle="round,pad=1", fc="#FDF5E6", ec="#8B7D6B", lw=1.5, alpha=1.0)
+
+# Place content
+ax.text(0.5, 0.5, content, ha="center", va="center", size=12,
+        family="monospace", weight="medium", bbox=bbox_props)
+
+# Add Caption
+plt.figtext(0.5, 0.05,
+            "Figure 3.2.X. Vector Transformation: Linear Projection Layer",
+            ha="center", fontsize=12, fontweight='bold')
+
+# ===================================================================
+#  GENERATE SEPARATE FIGURES FOR LINEAR PROJECTION STEPS
+# ===================================================================
+print("\n" + "="*70)
+print("GENERATING SEPARATED PROJECTION FIGURES")
+print("="*70)
+
+import matplotlib.pyplot as plt
+import torch
+
+# 1. Helper Function
+def fmt_vec(tensor, count=4):
+    vals = tensor.detach().cpu().numpy().flatten().tolist()
+    s = ", ".join([f"{v:.4f}" for v in vals[:count]])
+    last = vals[-1]
+    return f"[{s}, ..., {last:.4f}]"
+
+# 2. Extract Data
+with torch.no_grad():
+    # --- Image Data ---
+    vision_out = model.vision_model(pixel_values)
+    img_pre = vision_out.last_hidden_state[:, 0, :]   # [1, 768] (CLS)
+    img_post = model.get_image_features(pixel_values) # [1, 512] (Projected)
+
+    # --- Text Data ---
+    text_out = model.text_model(
+        input_ids=input_ids,
+        walk_short_pos=walk_short_pos,
+        output_hidden_states=True,
+        return_dict=True
+    )
+    eot_idx = text_inputs['attention_mask'][0].sum().item() - 1
+    txt_pre = text_out.last_hidden_state[:, eot_idx, :] # [1, 512] (EOS)
+    txt_post = model.get_text_features(input_ids, walk_short_pos=walk_short_pos) # [1, 512]
+
+# 3. Define Box Style
+bbox_props = dict(boxstyle="round,pad=1", fc="#FDF5E6", ec="#8B7D6B", lw=1.5, alpha=1.0)
+
+# ===================================================================
+# FIGURE 1: IMAGE ENCODER PROJECTION
+# ===================================================================
+img_content = (
+    "IMAGE ENCODER (ViT-B/32)\n"
+    "Step: Linear Projection (768D -> 512D)\n"
+    "--------------------------------------------------\n"
+    f"Input (CLS Token): {fmt_vec(img_pre)}\n"
+    f"                   Shape: [1, 768]\n\n"
+    f"Output (Feature) : {fmt_vec(img_post)}\n"
+    f"                   Shape: [1, 512]"
+)
+
+fig1, ax1 = plt.subplots(figsize=(10, 4))
+ax1.axis('off')
+ax1.text(0.5, 0.5, img_content, ha="center", va="center", size=13,
+         family="monospace", weight="medium", bbox=bbox_props)
+plt.figtext(0.5, 0.05, "Figure 3.2.14. Image Projection: [CLS] Token Transformation",
+            ha="center", fontsize=12, fontweight='bold')
+plt.tight_layout()
+plt.show()
+
+# ===================================================================
+# FIGURE 2: TEXT ENCODER PROJECTION
+# ===================================================================
+txt_content = (
+    "TEXT ENCODER (Transformer)\n"
+    "Step: Linear Projection (512D -> 512D)\n"
+    "--------------------------------------------------\n"
+    f"Input (EOS Token): {fmt_vec(txt_pre)}\n"
+    f"                   Shape: [1, 512]\n\n"
+    f"Output (Feature) : {fmt_vec(txt_post)}\n"
+    f"                   Shape: [1, 512]"
+)
+
+fig2, ax2 = plt.subplots(figsize=(10, 4))
+ax2.axis('off')
+ax2.text(0.5, 0.5, txt_content, ha="center", va="center", size=13,
+         family="monospace", weight="medium", bbox=bbox_props)
+plt.figtext(0.5, 0.05, "Figure 3.2.X. Text Projection: [EOS] Token Transformation",
+            ha="center", fontsize=12, fontweight='bold')
+plt.tight_layout()
+plt.show()
+
+# Check vision encoder architecture
+print("\n" + "="*70)
+print("MODEL ARCHITECTURE DETAILS")
+print("="*70)
+
+# Text encoder
+print("\nText Encoder:")
+print(f"  - Layers: {len(model.text_model.encoder.layers)}")
+print(f"  - Attention heads: {model.text_model.encoder.layers[0].self_attn.num_heads}")
+print(f"  - Hidden size: {model.text_model.encoder.layers[0].self_attn.embed_dim}")
+
+# Vision encoder
+print("\nVision Encoder:")
+try:
+    print(f"  - Layers: {len(model.vision_model.encoder.layers)}")
+    print(f"  - Attention heads: {model.vision_model.encoder.layers[0].self_attn.num_heads}")
+    print(f"  - Hidden size: {model.vision_model.encoder.layers[0].self_attn.embed_dim}")
+except:
+    print("  - Architecture inspection not available")
+    print("  - From attention shape: infer from output_attentions")
