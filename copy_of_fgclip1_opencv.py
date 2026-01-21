@@ -13,7 +13,7 @@ import torch
 from PIL import Image
 from transformers import AutoImageProcessor, AutoTokenizer, AutoModelForCausalLM
 
-model_root = "qihoo360/fg-clip-large"
+model_root = "qihoo360/fg-clip-base"
 
 image_processor = AutoImageProcessor.from_pretrained(model_root, trust_remote_code=True)
 tokenizer        = AutoTokenizer.from_pretrained(model_root, trust_remote_code=True)
