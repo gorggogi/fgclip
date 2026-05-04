@@ -1,0 +1,47 @@
+================================================================================
+🔬 FINAL BOSS: EXHAUSTIVE EVALUATION RESULTS SUMMARY
+================================================================================
+
+[1] HARDWARE & ENVIRONMENT
+    🖥️  OS:              Windows 10
+    🚀 GPU Used:        NVIDIA GeForce RTX 3050 Laptop GPU
+
+[2] MODELS EVALUATED
+    🔌 LoRA Adapter:    None (Zero-Shot)
+
+[3] DATASET COMPLEXITY
+    🔍 Total Queries:   90
+    🖼️  Gallery Size:    600
+    📏 Max Text Length: 77 tokens
+
+[4] 🏆 FINAL RETRIEVAL METRICS 🏆
+    🥇 Recall@1:        77.78%
+    🥈 Recall@5:        91.11%
+    🥉 Recall@10:       96.67%
+    📈 MRR:             0.8515
+
+[5] 📉 FAILURE ANALYSIS SUMMARY
+    🎯 Perfect First-Tries: 70 queries (77.8%) - Nailed it at Rank 1
+    🤏 Near Misses:         17 queries (18.9%) - Found in top 10, but missed Rank 1
+    💥 Severe Failures:      3 queries (3.3%) - Failed to find in top 10
+    -------------------------------------------------------------------------
+    Total Test Queries:     90 queries
+
+    📦 Category Accuracy:   100.00% (90 queries guessed the correct object type)
+
+[6] 📋 SAMPLE RETRIEVAL LEADERBOARD
+    🔍 Query: "Light-grey rectangular lunch box, pale blue latch clips and flap compartment, white oval shaped vent button on lid"
+
+    Rank   Item Name                      Score      Status
+    ------------------------------------------------------------
+    #1     lunchbox_074                   0.3827   📍 Top-1
+    #2     lunchbox_030                   0.3766   📍 Top-2
+    #3     lunchbox_073                   0.3758   📍 Top-3
+    #4     lunchbox_041                   0.3632   📍 Top-4
+    #5     lunchbox_066                   0.3555   📍 Top-5
+    #6     lunchbox_050                   0.3498   ✅ TRUE MATCH
+    #7     lunchbox_072                   0.3482   📍 Top-7
+    #8     lunchbox_080                   0.3444   📍 Top-8
+    #9     lunchbox_055                   0.3438   📍 Top-9
+    #10    lunchbox_042                   0.3429   📍 Top-10
+================================================================================
