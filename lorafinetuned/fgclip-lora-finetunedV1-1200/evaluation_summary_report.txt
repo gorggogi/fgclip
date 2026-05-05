@@ -4,10 +4,10 @@
 
 [1] HARDWARE & ENVIRONMENT
     🖥️  OS:              Windows 10
-    🚀 GPU Used:        NVIDIA GeForce RTX 3050 Laptop GPU
+    🐌 GPU Used:        None (Evaluated on CPU)
 
 [2] MODELS EVALUATED
-    🔌 LoRA Adapter:    None (Zero-Shot)
+    🔌 LoRA Adapter:    fgclip-lora-finetunedV1-1200
 
 [3] DATASET COMPLEXITY
     🔍 Total Queries:   90
@@ -34,14 +34,14 @@
 
     Rank   Item Name                      Score      Status
     ------------------------------------------------------------
-    #1     lunchbox_072                   0.3442   📍 Top-1
-    #2     lunchbox_074                   0.3379   📍 Top-2
-    #3     lunchbox_087                   0.3315   📍 Top-3
-    #4     lunchbox_073                   0.3271   📍 Top-4
-    #5     lunchbox_030                   0.3255   📍 Top-5
+    #1     lunchbox_072                   0.3441   📍 Top-1
+    #2     lunchbox_074                   0.3380   📍 Top-2
+    #3     lunchbox_087                   0.3313   📍 Top-3
+    #4     lunchbox_073                   0.3272   📍 Top-4
+    #5     lunchbox_030                   0.3251   📍 Top-5
     #6     lunchbox_042                   0.3228   📍 Top-6
-    #7     lunchbox_014                   0.3211   📍 Top-7
-    #8     lunchbox_066                   0.3204   📍 Top-8
-    #9     lunchbox_077                   0.3197   📍 Top-9
-    #10    lunchbox_075                   0.3104   📍 Top-10
+    #7     lunchbox_014                   0.3220   📍 Top-7
+    #8     lunchbox_066                   0.3205   📍 Top-8
+    #9     lunchbox_077                   0.3199   📍 Top-9
+    #10    lunchbox_075                   0.3098   📍 Top-10
 ================================================================================
