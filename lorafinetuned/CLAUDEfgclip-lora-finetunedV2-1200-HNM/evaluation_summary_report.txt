@@ -7,7 +7,7 @@
     🚀 GPU Used:        NVIDIA GeForce RTX 3050 Laptop GPU
 
 [2] MODELS EVALUATED
-    🔌 LoRA Adapter:    None (Zero-Shot)
+    🔌 LoRA Adapter:    CLAUDEfgclip-lora-finetunedV2-1200-HNM
 
 [3] DATASET COMPLEXITY
     🔍 Total Queries:   90
