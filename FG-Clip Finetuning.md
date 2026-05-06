@@ -33,15 +33,17 @@ Training consisted of 420 image pairs (840 images total) gathered from e-commerc
 
 The dataset was partitioned as follows:
 
-| Category | Total Pairs | Train (70%) | Validation (20%) | Test (10%) |
-|:---|:---:|:---:|:---:|:---:|
-| Bags | 100 | 70 | 15 | 15 |
-| Chargers | 100 | 70 | 15 | 15 |
-| Handkerchiefs | 100 | 70 | 15 | 15 |
-| Lunchboxes | 100 | 70 | 15 | 15 |
-| Tumblers | 100 | 70 | 15 | 15 |
-| Wallets | 100 | 70 | 15 | 15 |
-| **Total** | **600** | **420** | **90** | **90** |
+
+| Category      | Total Pairs | Train (70%) | Validation (20%) | Test (10%) |
+| ------------- | ----------- | ----------- | ---------------- | ---------- |
+| Bags          | 100         | 70          | 15               | 15         |
+| Chargers      | 100         | 70          | 15               | 15         |
+| Handkerchiefs | 100         | 70          | 15               | 15         |
+| Lunchboxes    | 100         | 70          | 15               | 15         |
+| Tumblers      | 100         | 70          | 15               | 15         |
+| Wallets       | 100         | 70          | 15               | 15         |
+| **Total**     | **600**     | **420**     | **90**           | **90**     |
+
 
 **Table 3.2-31. Data Split per Category (Train–Validation–Test)**
 
@@ -88,28 +90,30 @@ Instead of randomly shuffling the entire dataset, the sampler actively "mines" t
 
 Three fine-tuning configurations were developed to trace the impact of each design decision:
 
-| Hyperparameter | V1 | V2 + HNM | V2.1 + HNM |
-|:---|:---:|:---:|:---:|
-| **Architecture** | | | |
-| LoRA rank (r) | 8 | 32 | 32 |
-| LoRA alpha (α) | 16 | 64 | **128** |
-| Target modules | q\_proj, v\_proj | q\_proj, k\_proj, v\_proj, out\_proj | q\_proj, k\_proj, v\_proj, out\_proj |
-| LoRA dropout | 0.1 | 0.1 | 0.1 |
-| Trainable parameters | 491,520 (0.33%) | 3,932,160 (2.56%) | 3,932,160 (2.56%) |
-| **Optimizer** | | | |
-| Optimizer | AdamW | AdamW | AdamW |
-| Learning rate | 5e-5 (fixed) | 5e-5 | **3e-5** |
-| Scheduler | None | Cosine + 10% warmup | Cosine + 10% warmup |
-| Weight decay | 0.01 | 0.01 | 0.01 |
-| **Loss** | | | |
-| Temperature (τ) | ~0.07 (model default) | 0.02 (fixed) | **0.03** (fixed) |
-| Loss type | Single-image | Single-image | Single-image |
-| **Training** | | | |
-| Batch size | 16 | 16 | **8** |
-| Batching strategy | Random shuffle | **Category-grouped** | **Category-grouped** |
-| Early stopping | None | Patience = 3 | **Patience = 5** |
-| Max epochs | 15 | 20 | 20 |
-| Color jitter | Brightness only | Brightness, contrast, saturation, hue | All channels balanced (0.6–1.4) |
+
+| Hyperparameter       | V1                                                                | V2 + HNM                                                | V2.1 + HNM                                                                        |
+| -------------------- | ----------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **Architecture**     |                                                                   |                                                         |                                                                                   |
+| LoRA rank (r)        | 8                                                                 | 32                                                      | 32                                                                                |
+| LoRA alpha (α)       | 16                                                                | 64                                                      | **128**                                                                           |
+| Target modules       | qproj, vproj                                                      | qproj, kproj, vproj, outproj                            | qproj, kproj, vproj, outproj                                                      |
+| LoRA dropout         | 0.1                                                               | 0.1                                                     | 0.1                                                                               |
+| Trainable parameters | 491,520 (0.33%)                                                   | 3,932,160 (2.56%)                                       | 3,932,160 (2.56%)                                                                 |
+| **Optimizer**        |                                                                   |                                                         |                                                                                   |
+| Optimizer            | AdamW                                                             | AdamW                                                   | AdamW                                                                             |
+| Learning rate        | 5e-5 (fixed)                                                      | 5e-5                                                    | **3e-5**                                                                          |
+| Scheduler            | None                                                              | Cosine + 10% warmup                                     | Cosine + 10% warmup                                                               |
+| Weight decay         | 0.01                                                              | 0.01                                                    | 0.01                                                                              |
+| **Loss**             |                                                                   |                                                         |                                                                                   |
+| Temperature (τ)      | ~0.07 (model default)                                             | 0.02 (fixed)                                            | **0.03** (fixed)                                                                  |
+| Loss type            | Single-image                                                      | Single-image                                            | Single-image                                                                      |
+| **Training**         |                                                                   |                                                         |                                                                                   |
+| Batch size           | 16                                                                | 16                                                      | **8**                                                                             |
+| Batching strategy    | Random shuffle                                                    | **Category-grouped**                                    | **Category-grouped**                                                              |
+| Early stopping       | None                                                              | Patience = 3                                            | **Patience = 5**                                                                  |
+| Max epochs           | 15                                                                | 20                                                      | 20                                                                                |
+| Color jitter         | (brightness=(0.8, 1.2), contrast=None, saturation=None, hue=None) | (brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1) | *(brightness***=**0.4*, contrast***=**0.4*, saturation***=**0.4*, hue***=**0.1*)* |
+
 
 **Table 3.2-32. Three experimental fine-tuning configurations of LoRA**
 
@@ -121,7 +125,7 @@ Three fine-tuning configurations were developed to trace the impact of each desi
 
 V1 established a baseline using conservative LoRA settings (rank 8, q/v projections only, no scheduler, brightness-only augmentation). V2 + HNM introduced a suite of changes to the architecture, training procedure, and data pipeline:
 
-**LoRA rank 8 → 32, q/v → q/k/v/out.** Expanding both the rank and target modules gives the adapter significantly more capacity to learn fine-grained visual-textual alignment. Adding k\_proj and out\_proj enables the adapter to directly modify the query-key computation — how the model decides which tokens to attend to — rather than only adjusting the value aggregation that follows. This increases trainable parameters from ~0.33% to ~2.56% of the full model.
+**LoRA rank 8 → 32, q/v → q/k/v/out.** Expanding both the rank and target modules gives the adapter significantly more capacity to learn fine-grained visual-textual alignment. Adding kproj and outproj enables the adapter to directly modify the query-key computation — how the model decides which tokens to attend to — rather than only adjusting the value aggregation that follows. This increases trainable parameters from ~0.33% to ~2.56% of the full model.
 
 **Random shuffling → Category-grouped batching.** The custom Categorical Batch Sampler groups pairs by category prefix (e.g. `bag_012` → `"bag"`). Each category's shuffled index list is chunked into batches of 16. Every training batch therefore contains 16 pairs from the same category, with all 16 hard negatives being plausible matches for each image — creating a much harder discrimination task than random batching.
 
@@ -159,25 +163,29 @@ The result: V2.1 + HNM recovered from the training difficulty introduced by V2 +
 
 ### 5.1 Retrieval Metrics
 
-| Metric | V1 | V2 + HNM | V2.1 + HNM |
-|:---|:---:|:---:|:---:|
-| **Recall@1** | 71.11% | 78.89% | **80.00%** |
-| **Recall@5** | 91.11% | 91.11% | **92.22%** |
-| **Recall@10** | 93.33% | **96.67%** | **96.67%** |
-| **MRR** | 0.8017 | 0.8556 | **0.8615** |
-| Severe failures | 6 (6.7%) | 3 (3.3%) | **3 (3.3%)** |
+
+| Metric          | V1       | V2 + HNM   | V2.1 + HNM   |
+| --------------- | -------- | ---------- | ------------ |
+| **Recall@1**    | 71.11%   | 78.89%     | **80.00%**   |
+| **Recall@5**    | 91.11%   | 91.11%     | **92.22%**   |
+| **Recall@10**   | 93.33%   | **96.67%** | **96.67%**   |
+| **MRR**         | 0.8017   | 0.8556     | **0.8615**   |
+| Severe failures | 6 (6.7%) | 3 (3.3%)   | **3 (3.3%)** |
+
 
 **Table 5.1-1. Key Retrieval Metrics across Fine-Tuning Configurations**
 
 ### 5.2 Improvement over Baseline
 
-| Metric | V1 → V2 + HNM | V2 + HNM → V2.1 + HNM | V1 → V2.1 + HNM |
-|:---|:---:|:---:|:---:|
-| R@1 | **+7.78 pp** | +1.11 pp | **+8.89 pp** |
-| R@5 | +0.00 pp | +1.11 pp | **+1.11 pp** |
-| R@10 | **+3.34 pp** | +0.00 pp | **+3.34 pp** |
-| MRR | **+0.0539** | +0.0059 | **+0.0598** |
-| Severe failures | −3 | 0 | −3 |
+
+| Metric          | V1 → V2 + HNM | V2 + HNM → V2.1 + HNM | V1 → V2.1 + HNM |
+| --------------- | ------------- | --------------------- | --------------- |
+| R@1             | **+7.78 pp**  | +1.11 pp              | **+8.89 pp**    |
+| R@5             | +0.00 pp      | +1.11 pp              | **+1.11 pp**    |
+| R@10            | **+3.34 pp**  | +0.00 pp              | **+3.34 pp**    |
+| MRR             | **+0.0539**   | +0.0059               | **+0.0598**     |
+| Severe failures | −3            | 0                     | −3              |
+
 
 **Table 5.1-2. Incremental Improvement across Configurations**
 
@@ -185,19 +193,23 @@ The result: V2.1 + HNM recovered from the training difficulty introduced by V2 +
 
 All three configurations maintained **100% category accuracy** — the model never confused one category for another. All failures were fine-grained within-category confusions.
 
-| Category | Count | Notes |
-|:---|:---:|:---|
-| Perfect first-tries (V2.1) | 72 (80.0%) | Retrieved at rank 1 |
-| Near misses (V2.1) | 15 (16.7%) | In top 10 but not rank 1 |
-| Severe failures (V2.1) | 3 (3.3%) | Not in top 10 at all |
+
+| Category                   | Count      | Notes                    |
+| -------------------------- | ---------- | ------------------------ |
+| Perfect first-tries (V2.1) | 72 (80.0%) | Retrieved at rank 1      |
+| Near misses (V2.1)         | 15 (16.7%) | In top 10 but not rank 1 |
+| Severe failures (V2.1)     | 3 (3.3%)   | Not in top 10 at all     |
+
 
 #### Severe Failure Items (V2.1 + HNM)
 
-| Test Item | Description | V1 Rank | V2 + HNM Rank | V2.1 + HNM Rank |
-|:---|:---|:---:|:---:|:---:|
-| `tumbler_047` | Cream off-white insulated tumbler, pastel tulip/butterfly print | #60 | #28 | #33 |
-| `tumbler_065` | WRELS matte black soft flask | #113 | #101 | #86 |
-| `charger_040` | White QOOVI 22.5W wall charger | #4 ✅ | #8 ✅ | #16 |
+
+| Test Item     | Description                                                     | V1 Rank | V2 + HNM Rank | V2.1 + HNM Rank |
+| ------------- | --------------------------------------------------------------- | ------- | ------------- | --------------- |
+| `tumbler_047` | Cream off-white insulated tumbler, pastel tulip/butterfly print | #60     | #28           | #33             |
+| `tumbler_065` | WRELS matte black soft flask                                    | #113    | #101          | #86             |
+| `charger_040` | White QOOVI 22.5W wall charger                                  | #4 ✅    | #8 ✅          | #16             |
+
 
 **Table 5.1-3. Severe Failure Item Ranks across Configurations**
 
@@ -210,9 +222,7 @@ Note: `tumbler_065` is the hardest item across all configurations — never in a
 The progression from V1 → V2 + HNM → V2.1 + HNM traces three distinct contributions:
 
 1. **Architecture + HNM**: The jump from V1 to V2 + HNM (+7.78 pp R@1) demonstrates that scaling LoRA rank and target modules, combined with category-grouped batching and full-spectrum augmentation, substantially improves fine-grained retrieval. The cosine scheduler and early stopping prevent overfitting.
-
 2. **HNM hyperparameter compensation**: The step from V2 + HNM to V2.1 + HNM (+1.11 pp R@1) demonstrates that category-grouped batching alone is not sufficient — it must be paired with the right learning dynamics (lower LR, higher α, softer temperature, smaller batch). These changes recovered the R@1 regression and produced the best MRR and validation loss of any configuration.
-
 3. **Consistent category-level accuracy**: All three configurations maintained 100% category accuracy, confirming that the bottleneck is fine-grained within-category discrimination, not cross-category confusion.
 
 ---
