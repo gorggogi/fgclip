@@ -1,0 +1,144 @@
+1666: 
+1667: 
+1668: | Model             | R@1        | R@5        | R@10       | MRR        | Severe Fails |
+1669: | ----------------- | ---------- | ---------- | ---------- | ---------- | ------------ |
+1670: | V1                | 71.11%     | 91.11%     | 93.33%     | 0.8017     | 6            |
+1671: | V2                | **80.00%** | 92.22%     | 95.56%     | 0.8606     | 4            |
+1672: | V2 + HNM          | 78.89%     | 91.11%     | **96.67%** | 0.8556     | 3            |
+1673: | V2.1 + HNM        | **80.00%** | 92.22%     | **96.67%** | **0.8615** | 3            |
+1674: | CLAUDE V2 + HNM   | 77.78%     | 91.11%     | **96.67%** | 0.8515     | 3            |
+1675: | CLAUDE V2.1 + HNM | 78.89%     | **94.44%** | **96.67%** | **0.8615** | 3            |
+1676: 
+1677: 
+1678: > **Best overall**: **V3-optimized** — tied highest R@1 (80.00%), best-ever R@5 (96.67%), best MRR (0.8733), tied fewest severe failures (3), trained all 20 epochs without overfitting.
+1679: > **Best val loss**: V2.1 + HNM (1.0251) — but V3's retrieval metrics outperform despite higher val loss (1.1335). Val loss and retrieval are measuring different things.
+1680: > **Best for hard cases**: CLAUDE V2.1 + HNM — best tumbler_047 (rank 26) and tumbler_065 (rank 80) across all models; V3 got tumbler_047 wrong (rank 51) but tumbler_065 best yet at rank 82.
+1681: 
+1682: ---
+1683: 
+1684: ### Table 2: Full Hyperparameter Comparison
+1685: 
+1686: 
+1687: | Parameter              | V1                      | V2                                       | V2+HNM                                   | V2.1+HNM                                 | CLAUDE V2+HNM                            | CLAUDE V2.1+HNM                          |
+1688: | ---------------------- | ----------------------- | ---------------------------------------- | ---------------------------------------- | ---------------------------------------- | ---------------------------------------- | ---------------------------------------- |
+1689: | **Architecture**       |                         |                                          |                                          |                                          |                                          |                                          |
+1690: | Base model             | `qihoo360/fg-clip-base` | `qihoo360/fg-clip-base`                  | `qihoo360/fg-clip-base`                  | `qihoo360/fg-clip-base`                  | `qihoo360/fg-clip-base`                  | `qihoo360/fg-clip-base`                  |
+1691: | Trainable params       | 491,520                 | 3,932,160                                | 3,932,160                                | 3,932,160                                | 3,932,160                                | 3,932,160                                |
+1692: | Trainable %            | 0.33%                   | 2.56%                                    | 2.56%                                    | 2.56%                                    | 2.56%                                    | 2.56%                                    |
+1693: | LoRA rank (r)          | 4                       | 32                                       | 32                                       | 32                                       | 32                                       | 32                                       |
+1694: | LoRA alpha (α)         | 8                       | 64                                       | 64                                       | **128**                                  | 64                                       | **128**                                  |
+1695: | Target modules         | `q_proj`, `v_proj`      | `q_proj`, `k_proj`, `v_proj`, `out_proj` | `q_proj`, `k_proj`, `v_proj`, `out_proj` | `q_proj`, `k_proj`, `v_proj`, `out_proj` | `q_proj`, `k_proj`, `v_proj`, `out_proj` | `q_proj`, `k_proj`, `v_proj`, `out_proj` |
+1696: | Dropout                | 0.0                     | 0.1                                      | 0.1                                      | 0.1                                      | 0.1                                      | 0.1                                      |
+1697: | **Optimizer**          |                         |                                          |                                          |                                          |                                          |                                          |
+1698: | Optimizer              | SGD                     | AdamW                                    | AdamW                                    | AdamW                                    | AdamW                                    | AdamW                                    |
+1699: | Learning rate          | 1e-4                    | 5e-5                                     | 5e-5                                     | **3e-5**                                 | 5e-5                                     | **3e-5**                                 |
+1700: | Weight decay           | 0                       | 0.01                                     | 0.01                                     | 0.01                                     | 0.01                                     | 0.01                                     |
+1701: | **Scheduler**          |                         |                                          |                                          |                                          |                                          |                                          |
+1702: | Scheduler              | None                    | Cosine + warmup                          | Cosine + warmup                          | Cosine + warmup                          | Cosine + warmup                          | Cosine + warmup                          |
+1703: | Warmup %               | —                       | 10%                                      | 10%                                      | 10%                                      | 10%                                      | 10%                                      |
+1704: | **Loss**               |                         |                                          |                                          |                                          |                                          |                                          |
+1705: | Temperature            | 0.07 (model default)    | 0.02 (manual)                            | 0.02 (manual)                            | **0.03** (manual)                        | 0.02 (manual)                            | **0.03** (manual)                        |
+1706: | Loss type              | Single-image            | Single-image                             | Single-image                             | Single-image                             | **Dual-image**                           | **Dual-image**                           |
+1707: | **Training**           |                         |                                          |                                          |                                          |                                          |                                          |
+1708: | Train batch size       | 16                      | 16                                       | 16                                       | **8**                                    | 16                                       | **8**                                    |
+1709: | Batching strategy      | Random shuffle          | Random shuffle                           | **Category-grouped**                     | **Category-grouped**                     | **Category-grouped**                     | **Category-grouped**                     |
+1710: | Batches per epoch      | ~27                     | ~27                                      | ~27                                      | ~53                                      | ~27                                      | ~53                                      |
+1711: | Total steps            | 540                     | 540                                      | 540                                      | 1,060                                    | 540                                      | 1,060                                    |
+1712: | Max epochs             | 20                      | 20                                       | 20                                       | 20                                       | 20                                       | 20                                       |
+1713: | Early stopping         | None                    | Patience=3                               | Patience=3                               | **Patience=5**                           | Patience=3                               | **Patience=5**                           |
+1714: | **Inference**          |                         |                                          |                                          |                                          |                                          |                                          |
+1715: | Images encoded at eval | 600 (single)            | 600 (single)                             | 600 (single)                             | 600 (single)                             | 600 (single)                             | 600 (single)                             |
+1716: 
+1717: 
+1718: ---
+1719: 
+1720: ### Table 3: Training Results
+1721: 
+1722: 
+1723: | Metric                   | V1            | V2        | V2+HNM   | V2.1+HNM   | CLAUDE V2+HNM | CLAUDE V2.1+HNM |
+1724: | ------------------------ | ------------- | --------- | -------- | ---------- | ------------- | --------------- |
+1725: | Final train loss         | 0.0442        | 0.0473    | 0.0710   | —          | 0.0686        | 0.1225          |
+1726: | Final val loss (at stop) | 1.4328        | 1.1565    | 1.1684   | —          | 1.2539        | 1.0997          |
+1727: | **Best val loss**        | 1.4328        | 1.1565    | 1.1684   | **1.0251** | 1.2539        | 1.0465          |
+1728: | Epochs trained           | 20 / 20       | 14 / 20   | —        | —          | —             | 12 / 20         |
+1729: | Saved at epoch           | 20 (last)     | 14 (best) | — (best) | 7 (best)   | — (best)      | 7 (best)        |
+1730: | Early stop triggered     | No            | Yes       | Yes      | Yes        | Yes           | Yes             |
+1731: | GPU VRAM used            | —             | —         | 2.21 GB  | —          | 3.78 GB       | 3.23 GB         |
+1732: | Training seed            | 9435575495300 | —         | —        | —          | —             | 25201920299700  |
+1733: 
+1734: 
+1735: ---
+1736: 
+1737: ### Table 4: Failure Analysis
+1738: 
+1739: 
+1740: | Metric              | V1           | V2           | V2+HNM       | V2.1+HNM     | CLAUDE V2+HNM | CLAUDE V2.1+HNM |
+1741: | ------------------- | ------------ | ------------ | ------------ | ------------ | ------------- | --------------- |
+1742: | Perfect first-tries | 64 (71.1%)   | 72 (80.0%)   | 71 (78.9%)   | 72 (80.0%)   | 70 (77.8%)    | 71 (78.9%)      |
+1743: | Near misses         | 20 (22.2%)   | 14 (15.6%)   | 16 (17.8%)   | 15 (16.7%)   | 17 (18.9%)    | 16 (17.8%)      |
+1744: | **Severe failures** | **6 (6.7%)** | **4 (4.4%)** | **3 (3.3%)** | **3 (3.3%)** | **3 (3.3%)**  | **3 (3.3%)**    |
+1745: | Category accuracy   | —            | 100.00%      | —            | 100.00%      | —             | 100.00%         |
+1746: 
+1747: 
+1748: ---
+1749: 
+1750: ### Table 5: Severe Failure Items
+1751: 
+1752: 
+1753: | Test Item                                     | V1     | V2    | V2+HNM   | V2.1+HNM | CLAUDE V2+HNM | CLAUDE V2.1+HNM |
+1754: | --------------------------------------------- | ------ | ----- | -------- | -------- | ------------- | --------------- |
+1755: | `tumbler_047` (cream, pastel tulip/butterfly) | #60 ❌  | #13 ❌ | #28 ❌    | #33 ❌    | #30 ❌         | **#26** ❌       |
+1756: | `tumbler_065` (WRELS matte black flask)       | #113 ❌ | #99 ❌ | #101 ❌   | #86 ❌    | #93 ❌         | **#80** ❌       |
+1757: | `charger_040` (white QOOVI 22.5W)             | #4 ✅   | #24 ❌ | **#8** ✅ | #16 ❌    | #8 ✅          | #22 ❌           |
+1758: | `charger_081` (pink multi-port)               | #16 ❌  | #11 ❌ | #8 ✅     | ✅        | #11 ❌         | ✅               |
+1759: | `bag_058` (black mini barrel bag)             | #12 ❌  | — ✅   | — ✅      | — ✅      | — ✅           | — ✅             |
+1760: | `handkerchief_027`                            | —      | —     | #11 ❌    | — ✅      | —             | —               |
+1761: 
+1762: 
+1763: > ❌ = not in top 10 (severe failure). ✅ = in top 10 (recovered). Blank = was never a severe failure for that model. Bold = best rank for that item across all models.
+1764: 
+1765: **tumbler_065 remains the hardest item** - never in any top 10 across all models, though V3 brought it closest yet (rank 82). tumbler_047 regressed under V3's regularization (rank 51, worst since V1), but CLAUDE V2.1+HNM still holds the best for it (rank 26). charger_040 and charger_081 oscillate between severe and recovered across models.
+1766: 
+1767: ---
+1768: 
+1769: ### Table 6: Hard-Case Rank Trajectory
+1770: 
+1771: 
+1772: | Item                          | V1    | V2    | V2+HNM | V2.1+HNM | CLAUDE V2+HNM | CLAUDE V2.1+HNM | Trend                            |
+1773: | ----------------------------- | ----- | ----- | ------ | -------- | ------------- | --------------- | -------------------------------- |
+1774: | `tumbler_047`                 | #60   | #13   | #28    | #33      | #30           | **#26**         | ↘︎↗︎↘︎↗︎ Best in CLAUDE V2.1     |
+1775: | `tumbler_065`                 | #113  | #99   | #101   | #86      | #93           | **#80**         | ↘︎↘︎↗︎↘︎↗︎ Best in CLAUDE V2.1   |
+1776: | `charger_040`                 | #4 ✅  | #24 ❌ | #8 ✅   | #16 ❌    | #8 ✅          | #22 ❌           | Oscillating — boundary case      |
+1777: | `charger_081`                 | #16 ❌ | #11 ❌ | #8 ✅   | ✅        | #11 ❌         | ✅               | Oscillating — boundary case      |
+1778: | `lunchbox_050` (sample query) | #21   | #7    | #7     | **#4**   | #6            | #8              | V3 tied V2.1 at #4 |
+1779: 
+1780: 
+1781: ---
+1782: 
+1783: ### Table 7: Cross-Model Improvements (vs V1 baseline)
+1784: 
+1785: 
+1786: | Metric          | V2       | V2+HNM       | V2.1+HNM     | CLAUDE V2+HNM | CLAUDE V2.1+HNM |
+1787: | --------------- | -------- | ------------ | ------------ | ------------- | --------------- |
+1788: | R@1             | +8.89 pp | +7.78 pp     | **+8.89 pp** | +6.67 pp      | +7.78 pp        |
+1789: | R@5             | +1.11 pp | +0.00 pp     | +1.11 pp     | +0.00 pp      | **+3.33 pp**    |
+1790: | R@10            | +2.23 pp | **+3.34 pp** | **+3.34 pp** | **+3.34 pp**  | **+3.34 pp**    |
+1791: | MRR             | +0.0589  | +0.0539      | **+0.0598**  | +0.0498       | **+0.0598**     |
+1792: | Severe failures | −2       | −3           | −3           | −3            | −3              |
+1793: | Best val loss   | −0.2763  | −0.2644      | **−0.4077**  | −0.1789       | −0.3863         |
+1794: 
+1795: 
+1796: ---
+1797: 
+1798: ### Table 8: Ablation Contribution (marginal effect of each change)
+1799: 
+1800: 
+1801: | Change                                               | Introduced in   | Marginal R@1 | Marginal MRR | Notes                                         |
+1802: | ---------------------------------------------------- | --------------- | ------------ | ------------ | --------------------------------------------- |
+1803: | Larger LoRA (r=4→32) + more targets + scheduler + ES | V2              | +8.89 pp     | +0.0589      | Largest single improvement                    |
+1804: | Hard negative mining (category batching)             | V2+HNM          | −1.11 pp     | −0.0050      | Counterproductive for R@1                     |
+1805: | α=128, LR=3e-5, temp=0.03, batch=8, patience=5       | V2.1+HNM        | +1.11 pp     | +0.0059      | Recovered HNM's R@1 loss + improved MRR       |
+1806: | Dual-image loss                                      | CLAUDE V2+HNM   | −1.11 pp     | −0.0032      | Dilutes per-image signal; hurts R@1           |
+1807: | Dual-image + V2.1 params combined                    | CLAUDE V2.1+HNM | +1.11 pp     | +0.0100      | -          | V2.1 params compensate for dual-image penalty |
+1808: 
+1809: 
