@@ -1,0 +1,48 @@
+================================================================================
+🔬 FINAL BOSS: EXHAUSTIVE EVALUATION RESULTS SUMMARY
+================================================================================
+
+[1] HARDWARE & ENVIRONMENT
+    🖥️  OS:              Windows 10
+    🚀 GPU Used:        NVIDIA GeForce RTX 3050 Laptop GPU
+
+[2] MODELS EVALUATED
+    🤖 Base Model:      qihoo360/fg-clip-base
+    🔌 LoRA Adapter:    fgclip-lora-finetunedV4-optimized
+
+[3] DATASET COMPLEXITY
+    🔍 Total Queries:   90
+    🖼️  Gallery Size:    600
+    📏 Max Text Length: 77 tokens
+
+[4] 🏆 FINAL RETRIEVAL METRICS 🏆
+    🥇 Recall@1:        81.11%
+    🥈 Recall@5:        96.67%
+    🥉 Recall@10:       97.78%
+    📈 MRR:             0.8819
+
+[5] 📉 FAILURE ANALYSIS SUMMARY
+    🎯 Perfect First-Tries: 73 queries (81.1%) - Nailed it at Rank 1
+    🤏 Near Misses:         15 queries (16.7%) - Found in top 10, but missed Rank 1
+    💥 Severe Failures:      2 queries (2.2%) - Failed to find in top 10
+    -------------------------------------------------------------------------
+    Total Test Queries:     90 queries
+
+    📦 Category Accuracy:   100.00% (90 queries guessed the correct object type)
+
+[6] 📋 SAMPLE RETRIEVAL LEADERBOARD
+    🔍 Query: "Light-grey rectangular lunch box, pale blue latch clips and flap compartment, white oval shaped vent button on lid"
+
+    Rank   Item Name                      Score      Status
+    ------------------------------------------------------------
+    #1     lunchbox_074                   0.4163   📍 Top-1
+    #2     lunchbox_041                   0.3940   📍 Top-2
+    #3     lunchbox_030                   0.3572   📍 Top-3
+    #4     lunchbox_050                   0.3554   ✅ TRUE MATCH
+    #5     lunchbox_082                   0.3521   📍 Top-5
+    #6     lunchbox_014                   0.3495   📍 Top-6
+    #7     lunchbox_042                   0.3416   📍 Top-7
+    #8     lunchbox_073                   0.3303   📍 Top-8
+    #9     lunchbox_055                   0.3299   📍 Top-9
+    #10    lunchbox_072                   0.3277   📍 Top-10
+================================================================================

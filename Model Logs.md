@@ -962,17 +962,17 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 
 ### What Changed from V2.1 + HNM
 
-|| Aspect                  | V2.1 + HNM                                                    | V3-optimized                                                        |
-|| ----------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- |
-|| LoRA rank (r)           | 32                                                            | **16**                                                              |
-|| LoRA alpha (α)         | 128                                                           | **32**                                                              |
-|| Weight decay            | 0.01                                                          | **0.1** (10x stronger)                                              |
-|| Temperature             | 0.03                                                          | **0.05**                                                            |
-|| Cosine end LR           | 1.5e-5                                                        | **0.0** (cosine to zero)                                            |
-|| Warmup                  | 10%                                                          | **20%**                                                             |
-|| Early stopping          | Patience = 5                                                   | **Patience = 3**                                                    |
-|| Hardware                | GPU (RTX 3050)                                                | **CPU**                                                             |
-|| Data augmentation       | brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1     | **brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1**          |
+| Aspect                  | V2.1 + HNM                                                    | V3-optimized                                                        |
+| ----------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- |
+| LoRA rank (r)           | 32                                                            | **16**                                                              |
+| LoRA alpha (α)         | 128                                                           | **32**                                                              |
+| Weight decay            | 0.01                                                          | **0.1** (10x stronger)                                              |
+| Temperature             | 0.03                                                          | **0.05**                                                            |
+| Cosine end LR           | 1.5e-5                                                        | **0.0** (cosine to zero)                                            |
+| Warmup                  | 10%                                                          | **20%**                                                             |
+| Early stopping          | Patience = 5                                                   | **Patience = 3**                                                    |
+| Hardware                | GPU (RTX 3050)                                                | **CPU**                                                             |
+| Data augmentation       | brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1     | **brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1**          |
 
 
 ### Why These Changes
@@ -1003,35 +1003,35 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 
 ### Architecture
 
-|| Parameter            | Value                                    |
-|| -------------------- | ---------------------------------------- |
-|| Base model           | `qihoo360/fg-clip-base`                  |
-|| Trainable parameters | 1,966,080 (1.2970% of total)             |
-|| LoRA rank (r)        | **16**                                   |
-|| LoRA alpha (α)       | **32**                                   |
-|| Target modules       | `q_proj`, `k_proj`, `v_proj`, `out_proj` |
-|| Dropout              | 0.1                                      |
-|| Model dtype          | `torch.float32`                          |
+| Parameter            | Value                                    |
+| -------------------- | ---------------------------------------- |
+| Base model           | `qihoo360/fg-clip-base`                  |
+| Trainable parameters | 1,966,080 (1.2970% of total)             |
+| LoRA rank (r)        | **16**                                   |
+| LoRA alpha (α)       | **32**                                   |
+| Target modules       | `q_proj`, `k_proj`, `v_proj`, `out_proj` |
+| Dropout              | 0.1                                      |
+| Model dtype          | `torch.float32`                          |
 
 
 ### Hyperparameters
 
-|| Parameter             | Value                                      |
-|| --------------------- | ------------------------------------------ |
-|| Optimizer             | AdamW                                      |
-|| Learning rate (start) | 3e-5                                       |
-|| Learning rate (end)   | **0.0** (cosine decay to zero)             |
-|| Scheduler             | Cosine with warmup (20% of 540 steps)      |
-|| Warmup steps          | 108 / 540 total                            |
-|| Weight decay          | **0.1**                                    |
-|| Betas                 | (0.9, 0.999)                              |
-|| Epsilon               | 1e-8                                      |
-|| Loss function         | CrossEntropyLoss                           |
-|| Temperature           | **0.05** (manual override)                 |
-|| Batch size            | 16 (val), N/A (train, CPU)                 |
-|| Max epochs            | 20                                         |
-|| Early stopping        | Patience = 3 epochs (not triggered)         |
-|| DataLoader workers    | 0                                          |
+| Parameter             | Value                                      |
+| --------------------- | ------------------------------------------ |
+| Optimizer             | AdamW                                      |
+| Learning rate (start) | 3e-5                                       |
+| Learning rate (end)   | **0.0** (cosine decay to zero)             |
+| Scheduler             | Cosine with warmup (20% of 540 steps)      |
+| Warmup steps          | 108 / 540 total                            |
+| Weight decay          | **0.1**                                    |
+| Betas                 | (0.9, 0.999)                              |
+| Epsilon               | 1e-8                                      |
+| Loss function         | CrossEntropyLoss                           |
+| Temperature           | **0.05** (manual override)                 |
+| Batch size            | 16 (val), N/A (train, CPU)                 |
+| Max epochs            | 20                                         |
+| Early stopping        | Patience = 3 epochs (not triggered)         |
+| DataLoader workers    | 0                                          |
 
 > **Note on train batch size**: V3 was trained on CPU. The training summary report shows "Train Batch Size: None" because batch size was managed differently in the CPU training script (likely dynamic/padded batching). The effective training throughput was determined by the CPU training implementation rather than a fixed batch size.
 
@@ -1052,86 +1052,86 @@ Compose(
 
 ### Training Loss Curve
 
-|| Epoch | Train Loss | Val Loss   | Note              |
-|| ----- | ---------- | ---------- | ----------------- |
-|| 1     | 1.1819     | 1.4054     | 🟢 Saved          |
-|| 2     | 1.1332     | 1.3866     | 🟢 Saved          |
-|| 3     | 1.0990     | 1.3522     | 🟢 Saved          |
-|| 4     | 1.0265     | 1.3023     | 🟢 Saved          |
-|| 5     | 0.9636     | 1.2533     | 🟢 Saved          |
-|| 6     | 0.8874     | 1.2188     | 🟢 Saved          |
-|| 7     | 0.8131     | 1.1925     | 🟢 Saved          |
-|| 8     | 0.7650     | 1.1724     | 🟢 Saved          |
-|| 9     | 0.7377     | 1.1579     | 🟢 Saved          |
-|| 10    | 0.6994     | 1.1509     | 🟢 Saved          |
-|| 11    | 0.6626     | 1.1429     | 🟢 Saved          |
-|| 12    | 0.6276     | 1.1420     | 🟢 Saved          |
-|| 13    | 0.6401     | 1.1398     | 🟢 Saved          |
-|| 14    | 0.5889     | 1.1374     | 🟢 Saved          |
-|| 15    | 0.6023     | 1.1358     | 🟢 Saved          |
-|| 16    | 0.5591     | 1.1345     | 🟢 Saved          |
-|| 17    | 0.5585     | 1.1339     | 🟢 Saved          |
-|| 18    | 0.5402     | 1.1337     | 🟢 Saved          |
-|| 19    | 0.5466     | 1.1336     | 🟢 Saved          |
-|| 20    | 0.5472     | **1.1335** | 🟢 **Best — saved** |
+| Epoch | Train Loss | Val Loss   | Note              |
+| ----- | ---------- | ---------- | ----------------- |
+| 1     | 1.1819     | 1.4054     | 🟢 Saved          |
+| 2     | 1.1332     | 1.3866     | 🟢 Saved          |
+| 3     | 1.0990     | 1.3522     | 🟢 Saved          |
+| 4     | 1.0265     | 1.3023     | 🟢 Saved          |
+| 5     | 0.9636     | 1.2533     | 🟢 Saved          |
+| 6     | 0.8874     | 1.2188     | 🟢 Saved          |
+| 7     | 0.8131     | 1.1925     | 🟢 Saved          |
+| 8     | 0.7650     | 1.1724     | 🟢 Saved          |
+| 9     | 0.7377     | 1.1579     | 🟢 Saved          |
+| 10    | 0.6994     | 1.1509     | 🟢 Saved          |
+| 11    | 0.6626     | 1.1429     | 🟢 Saved          |
+| 12    | 0.6276     | 1.1420     | 🟢 Saved          |
+| 13    | 0.6401     | 1.1398     | 🟢 Saved          |
+| 14    | 0.5889     | 1.1374     | 🟢 Saved          |
+| 15    | 0.6023     | 1.1358     | 🟢 Saved          |
+| 16    | 0.5591     | 1.1345     | 🟢 Saved          |
+| 17    | 0.5585     | 1.1339     | 🟢 Saved          |
+| 18    | 0.5402     | 1.1337     | 🟢 Saved          |
+| 19    | 0.5466     | 1.1336     | 🟢 Saved          |
+| 20    | 0.5472     | **1.1335** | 🟢 **Best — saved** |
 
 > **Val loss never plateaued**: Unlike all previous models that triggered early stopping, V3's val loss continued decreasing through all 20 epochs (1.4054 → 1.1335). The model was still learning. This suggests either (a) more epochs would help, or (b) the strong regularization (wd=0.1) keeps the model in a sweet spot where it generalizes better the longer it trains. The highest train loss at stop (0.5472) among HNM models confirms the model was not overfitting.
 
 ### Training Results
 
-|| Metric                   | Value                                  |
-|| ------------------------ | -------------------------------------- |
-|| Final train loss         | 0.5472                                 |
-|| Final val loss (at stop) | 1.1335                                 |
-|| **Best val loss**        | **1.1335** (saved checkpoint, epoch 20) |
-|| Epochs trained           | **20 / 20** (trained full)             |
-|| Epochs saved             | 20                                     |
-|| Early stop triggered     | **No** (patience not exhausted)        |
+| Metric                   | Value                                  |
+| ------------------------ | -------------------------------------- |
+| Final train loss         | 0.5472                                 |
+| Final val loss (at stop) | 1.1335                                 |
+| **Best val loss**        | **1.1335** (saved checkpoint, epoch 20) |
+| Epochs trained           | **20 / 20** (trained full)             |
+| Epochs saved             | 20                                     |
+| Early stop triggered     | **No** (patience not exhausted)        |
 
 
 ### Evaluation Results
 
 **Evaluation setup**: 90 test queries matched against all 600 gallery images. Loaded fine-tuned adapter: `fgclip-lora-finetunedV3-optimized`.
 
-|| Metric            | Value      | Count |
-|| ----------------- | ---------- | ----- |
-|| **Recall@1**      | **80.00%** | 72/90 |
-|| **Recall@5**      | **96.67%** | 87/90 |
-|| **Recall@10**     | **96.67%** | 87/90 |
-|| **MRR**           | **0.8733** | —     |
-|| Category accuracy | 100.00%    | 90/90 |
+| Metric            | Value      | Count |
+| ----------------- | ---------- | ----- |
+| **Recall@1**      | **80.00%** | 72/90 |
+| **Recall@5**      | **96.67%** | 87/90 |
+| **Recall@10**     | **96.67%** | 87/90 |
+| **MRR**           | **0.8733** | —     |
+| Category accuracy | 100.00%    | 90/90 |
 
 
 #### Across All Models Comparison
 
-|| Metric          | V1     | V2     | V2+HNM | V2.1+HNM   | CLAUDE V2+HNM | CLAUDE V2.1+HNM | **V3-optimized** |
-|| --------------- | ------ | ------ | ------ | ---------- | ------------- | --------------- | ---------------- |
-|| Recall@1        | 71.11% | 80.00% | 78.89% | 80.00%     | 77.78%        | 78.89%          | **80.00%**        |
-|| Recall@5        | 91.11% | 92.22% | 91.11% | 92.22%     | 91.11%        | 94.44%          | **96.67%**        |
-|| Recall@10       | 93.33% | 95.56% | 96.67% | 96.67%     | 96.67%        | 96.67%          | **96.67%**        |
-|| MRR             | 0.8017 | 0.8606 | 0.8556 | 0.8615     | 0.8515        | 0.8615          | **0.8733**        |
-|| Best val loss   | 1.4328 | 1.1565 | 1.1684 | 1.0251     | 1.0465        | 1.0465          | 1.1335            |
-|| Severe failures | 6      | 4      | 3      | 3          | 3             | 3               | **3**             |
+| Metric          | V1     | V2     | V2+HNM | V2.1+HNM   | CLAUDE V2+HNM | CLAUDE V2.1+HNM | **V3-optimized** |
+| --------------- | ------ | ------ | ------ | ---------- | ------------- | --------------- | ---------------- |
+| Recall@1        | 71.11% | 80.00% | 78.89% | 80.00%     | 77.78%        | 78.89%          | **80.00%**        |
+| Recall@5        | 91.11% | 92.22% | 91.11% | 92.22%     | 91.11%        | 94.44%          | **96.67%**        |
+| Recall@10       | 93.33% | 95.56% | 96.67% | 96.67%     | 96.67%        | 96.67%          | **96.67%**        |
+| MRR             | 0.8017 | 0.8606 | 0.8556 | 0.8615     | 0.8515        | 0.8615          | **0.8733**        |
+| Best val loss   | 1.4328 | 1.1565 | 1.1684 | 1.0251     | 1.0465        | 1.0465          | 1.1335            |
+| Severe failures | 6      | 4      | 3      | 3          | 3             | 3               | **3**             |
 
 > **V3 is the best overall model**: Highest R@5 (96.67%), highest MRR (0.8733), tied highest R@1 (80.00%), tied fewest severe failures (3). The best val loss being the highest (1.1335) is misleading — val loss does not correlate with retrieval quality in this case. V3's smaller rank + stronger weight decay produce a model that generalizes better to retrieval despite having higher val loss.
 
 
 #### Failure Analysis
 
-|| Category            | Count      | Notes                    |
-|| ------------------- | ---------- | ------------------------ |
-|| Perfect first-tries | 72 (80.0%) | Retrieved at rank 1      |
-|| Near misses         | 15 (16.7%) | In top 10 but not rank 1 |
-|| Severe failures     | 3 (3.3%)   | **Not in top 10 at all** |
+| Category            | Count      | Notes                    |
+| ------------------- | ---------- | ------------------------ |
+| Perfect first-tries | 72 (80.0%) | Retrieved at rank 1      |
+| Near misses         | 15 (16.7%) | In top 10 but not rank 1 |
+| Severe failures     | 3 (3.3%)   | **Not in top 10 at all** |
 
 
 #### Severe Failures (not in top 10)
 
-|| Test Index | Query       | Correct Item | Rank    | V2.1+HNM | CLAUDE V2.1+HNM | Notes                                                                      |
-|| ---------- | ----------- | ------------ | ------- | -------- | ---------------- | -------------------------------------------------------------------------- |
-|| 46         | tumbler_047 | tumbler_047  | **#14** | #33      | #26              | Cream off-white tumbler, pastel print (recovered: V2.1 #33 → V3 #14 ✅)     |
-|| 52         | tumbler_065 | tumbler_065  | **#38** | #86      | #80              | WRELS matte black flask (**best rank across ALL models** ✅)                |
-|| 62         | charger_040 | charger_040  | **#20** | #16      | #22              | White QOOVI 22.5W charger (severe in V3, recovered in CLAUDE V2.1+HNM)     |
+| Test Index | Query       | Correct Item | Rank    | V2.1+HNM | CLAUDE V2.1+HNM | Notes                                                                      |
+| ---------- | ----------- | ------------ | ------- | -------- | ---------------- | -------------------------------------------------------------------------- |
+| 46         | tumbler_047 | tumbler_047  | **#14** | #33      | #26              | Cream off-white tumbler, pastel print (recovered: V2.1 #33 → V3 #14 ✅)     |
+| 52         | tumbler_065 | tumbler_065  | **#38** | #86      | #80              | WRELS matte black flask (**best rank across ALL models** ✅)                |
+| 62         | charger_040 | charger_040  | **#20** | #16      | #22              | White QOOVI 22.5W charger (severe in V3, recovered in CLAUDE V2.1+HNM)     |
 
 > **tumbler_065 achieved its best rank ever**: #38 in V3 is far better than any previous model. CLAUDE V2.1+HNM held the previous best at #80. This is a 52% improvement in rank position.
 > **tumbler_047 also recovered significantly**: #14 in V3 beats CLAUDE V2.1's #26, though V2 still held the best rank for this item at #13.
@@ -1143,30 +1143,30 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 
 > **Tied best result for this query.** V2.1 achieved rank 4; V3 matches it at rank 4.
 
-|| Rank | Item         | Score  | Status       |
-|| ---- | ------------ | ------ | ------------ |
-|| #1   | lunchbox_041 | 0.4208 |              |
-|| #2   | lunchbox_074 | 0.4125 |              |
-|| #3   | lunchbox_030 | 0.3930 |              |
-|| #4   | lunchbox_050 | 0.3722 | ✅ TRUE MATCH |
-|| #5   | lunchbox_042 | 0.3720 |              |
-|| #6   | lunchbox_055 | 0.3590 |              |
-|| #7   | lunchbox_073 | 0.3580 |              |
-|| #8   | lunchbox_082 | 0.3513 |              |
-|| #9   | lunchbox_014 | 0.3423 |              |
-|| #10  | lunchbox_004 | 0.3329 |              |
+| Rank | Item         | Score  | Status       |
+| ---- | ------------ | ------ | ------------ |
+| #1   | lunchbox_041 | 0.4208 |              |
+| #2   | lunchbox_074 | 0.4125 |              |
+| #3   | lunchbox_030 | 0.3930 |              |
+| #4   | lunchbox_050 | 0.3722 | ✅ TRUE MATCH |
+| #5   | lunchbox_042 | 0.3720 |              |
+| #6   | lunchbox_055 | 0.3590 |              |
+| #7   | lunchbox_073 | 0.3580 |              |
+| #8   | lunchbox_082 | 0.3513 |              |
+| #9   | lunchbox_014 | 0.3423 |              |
+| #10  | lunchbox_004 | 0.3329 |              |
 
 
 #### Confusion Matrix (Category Level)
 
-|| True \ Predicted  | Bags | Chargers | Handkerchiefs | Lunchboxes | Tumblers | Wallets |
-|| ----------------- | ---- | -------- | ------------- | ---------- | -------- | ------- |
-|| **Bags**          | 15   | 0        | 0             | 0          | 0        | 0       |
-|| **Chargers**      | 0    | 15       | 0             | 0          | 0        | 0       |
-|| **Handkerchiefs** | 0    | 0        | 15            | 0          | 0        | 0       |
-|| **Lunchboxes**    | 0    | 0        | 0             | 15         | 0        | 0       |
-|| **Tumblers**      | 0    | 0        | 0             | 0          | 15       | 0       |
-|| **Wallets**       | 0    | 0        | 0             | 0          | 0        | 15      |
+| True \ Predicted  | Bags | Chargers | Handkerchiefs | Lunchboxes | Tumblers | Wallets |
+| ----------------- | ---- | -------- | ------------- | ---------- | -------- | ------- |
+| **Bags**          | 15   | 0        | 0             | 0          | 0        | 0       |
+| **Chargers**      | 0    | 15       | 0             | 0          | 0        | 0       |
+| **Handkerchiefs** | 0    | 0        | 15            | 0          | 0        | 0       |
+| **Lunchboxes**    | 0    | 0        | 0             | 15         | 0        | 0       |
+| **Tumblers**      | 0    | 0        | 0             | 0          | 15       | 0       |
+| **Wallets**       | 0    | 0        | 0             | 0          | 0        | 15      |
 
 **100% category accuracy** maintained across all models.
 
