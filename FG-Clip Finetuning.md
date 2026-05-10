@@ -21,12 +21,12 @@ The equation above defines the core idea behind LoRA. Instead of updating the en
 Where W represents the frozen pre-trained weight matrix, while B and A are the newly introduced trainable decomposition matrices. These are smaller matrices that act as a bottleneck.
 
 Hypothetically, if an attention layer has a dimension of 10,000 x 10,000, LoRA reduces computational load by restricting the parameter updates to a much smaller subspace Rank (r). If r=32, the decomposition operates as follows:
-
+	  
 Matrix A: Projects the input dimension down to the lower-rank space (10,000 x 32), resulting in 320,000 parameters.
 
 Matrix B: Conversely, projects the lower-rank representation back up to the original dimensionality (32 x 10,000), resulting in an additional 320,000 parameters.
 
-This gives us a total of 640,000 trainable parameters instead of updating millions of parameters across the full architecture. 
+This gives us a total of 640,000 trainable parameters instead of updating millions of parameters across the full architecture. 
 
 The LoRA update is scaled by a factor a/r before being added to the frozen weights:
 
@@ -47,9 +47,9 @@ When applied to the study’s experimental configuration, the efficiency of this
 ### 2.1 Dataset Construction
 
 Training consisted of 420 image pairs (840 images total) gathered from e-commerce platforms such as Facebook Marketplace, Shopee, and Carousell. This approach helped capture the variable lighting, backgrounds, and camera angles typical of real-world lost and found images. Each pair consists of one image labeled as the "lost" item, and another image of the same item labeled as the "found" item. The dataset included 6 categories: Bags, Chargers, Handkerchiefs, Lunchboxes, Tumblers, and Wallets.
-
-The dataset was partitioned as follows:
-
+     
+   The dataset was partitioned as follows:  
+   
 
 | Category      | Total Pairs | Train (70%) | Validation (20%) | Test (10%) |
 | ------------- | ----------- | ----------- | ---------------- | ---------- |
@@ -71,14 +71,14 @@ The table above shows how the 600 image pairs are divided across the six item ca
 For image captioning, the researchers utilized a vision-language model (VLM), Claude AI, to generate descriptions for all 840 images, which were then verified by a human annotator. Each caption follows a structured attribute taxonomy:
 
 `[Color] + [Brand/Text] + [Specific Category] + [Condition/Distinguishing Feature]`
-
+	  
 For example: *"Pink Guess compact zip-around wallet, quilted diamond-stitched faux leather, silver triangle GUESS logo plate centered on front flap."*
 
 For each positive caption (an accurate description of the item), a corresponding negative caption was constructed by modifying one defining attribute or feature such as color, material, hardware, texture, or shape, while keeping the rest of the caption identical. This serves as our Textual Hard Negative, forcing the model's text encoder to differentiate at a microscopic level rather than relying on broad semantic categories.
 
 The caption structure above shows the four-part format used to describe each item. Each caption combines color, brand or text, specific category, and a distinguishing feature or condition. This structured format ensures that captions are detailed and consistent across all items, making it easier for the model to learn fine-grained visual-textual alignment. The hard negatives are created by changing only one of these four attributes while keeping the other three identical to the positive caption, testing the model's ability to distinguish between visually similar items.
 
-**Intersection Rule**
+**Intersection Rule** 
 
 An intersection rule was introduced to control which attributes appear in the positive captions. The rule dictates that only features visible in both images of a pair are described. This prevents the text encoder from referencing attributes the vision encoder cannot observe, preventing model hallucination and ensuring that both encoders are grounded in mutually visible evidence.
 
@@ -91,7 +91,7 @@ Training images pass through an augmentation pipeline to simulate the variabilit
 - Color jitter: changes brightness, contrast, saturation, and hue to account for camera and lighting variation
 - Random erasing (p = 0.3, scale = [0.02, 0.15]): randomly masks a rectangular region, preventing over-reliance on a single salient feature (e.g., a brand logo) and encouraging the model to leverage shape, texture, and material cues holistically
 
-Validation and test images receive only the resize operation to ensure unbiased performance evaluation.
+  Validation and test images receive only the resize operation to ensure unbiased performance evaluation.
 
 ---
 
@@ -176,7 +176,7 @@ Total trainable parameters depend on configuration (see Table 4.1-1). The frozen
 
 **Text encoder.** All 2N captions are tokenized by the FG-CLIP tokenizer (vocabulary size 49,408, max sequence length 77 tokens). Token sequences shorter than 77 are padded to the longest sequence in the batch. The text encoder processes the padded token sequence through the same 12-layer transformer architecture (adapted with LoRA), producing 2N text embeddings — one per caption.
 
-**Output of Stage 2.** Two embedding tensors: N normalized image embeddings and 2N normalized text embeddings, each of dimension 768, in the shared FG-CLIP embedding space.
+**Output of Stage 2.** Two embedding tensors: N normalized image embeddings and 2N normalized text embeddings, each of dimension 512, in the shared FG-CLIP embedding space.
 
 #### Stage 3 — Similarity Computation and Contrastive Loss
 
@@ -230,7 +230,7 @@ The table above illustrates the complete four-stage fine-tuning pipeline. Each s
 | Stage | Input                  | Operation                                                                                                 | Output                                          |
 | ----- | ---------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | 1     | 420 dataset pairs      | Random shuffle (default) or Categorical Batch Sampler (hard negative mining); batch size varies by config | N image-caption pairs per step                  |
-| 2     | N images + 2N captions | LoRA-adapted dual-stream encoding (ViT-B/16 + text transformer)                                           | N image embeds (768-d) + 2N text embeds (768-d) |
+| 2     | N images + 2N captions | LoRA-adapted dual-stream encoding (ViT-B/16 + text transformer)                                           | N image embeds (512-d) + 2N text embeds (512-d) |
 | 3     | All embeddings         | L2-normalize → cosine sim → τ (config-dependent) → CE loss over (N×2N) matrix                             | Scalar loss                                     |
 | 4     | Loss scalar            | AdamW + cosine LR (config-dependent) + 10% warmup + early stopping (config-dependent)                     | LoRA weight updates (ΔW = BA)                   |
 
@@ -242,9 +242,9 @@ For a batch of N image-caption pairs, the model receives N images alongside 2N t
 ### 3.3 Categorical Batch Mining (Visual Hard Negatives)
 
 While the dataset provides textual hard negatives, standard randomized data loading fails to consistently challenge the vision encoder, as visually dissimilar items (e.g., a bag and a charger) are easily distinguished. To address this, a custom Categorical Batch Sampler was implemented.
-
-Instead of randomly shuffling the entire dataset, the sampler actively "mines" the dataset to construct batches consisting entirely of items from the same category (e.g., a batch of 16 highly similar lunchboxes). By forcing visually similar items into the same batch, the model is penalized for relying on macro-features like general shape or dominant color. This forces the vision encoder to visually map the micro-features detailed in the textual hard negatives (such as a specific latch or zipper) to lower the contrastive loss.
-
+     
+   Instead of randomly shuffling the entire dataset, the sampler actively "mines" the dataset to construct batches consisting entirely of items from the same category (e.g., a batch of 16 highly similar lunchboxes). By forcing visually similar items into the same batch, the model is penalized for relying on macro-features like general shape or dominant color. This forces the vision encoder to visually map the micro-features detailed in the textual hard negatives (such as a specific latch or zipper) to lower the contrastive loss.  
+     
 ## 4. Results and Discussion
 
 Three fine-tuning configurations were developed to trace the impact of each design decision:

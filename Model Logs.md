@@ -87,7 +87,7 @@ This was the initial baseline run before any hyperparameter exploration. The goa
 | Parameter            | Value                                                       |
 | -------------------- | ----------------------------------------------------------- |
 | Base model           | `qihoo360/fg-clip-base`                                     |
-| Vision backbone      | ViT-B/16 (14×14 patch grid, 197 tokens, 768-dim embeddings) |
+| Vision backbone      | ViT-B/16 (14×14 patch grid, 197 tokens, 512-dim embeddings) |
 | Trainable parameters | **491,520 (0.3274% of total)**                              |
 | LoRA rank (r)        | 8                                                           |
 | LoRA alpha (α)       | 16                                                          |
@@ -306,7 +306,7 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 | Parameter            | Value                                                       |
 | -------------------- | ----------------------------------------------------------- |
 | Base model           | `qihoo360/fg-clip-base`                                     |
-| Vision backbone      | ViT-B/16 (14×14 patch grid, 197 tokens, 768-dim embeddings) |
+| Vision backbone      | ViT-B/16 (14×14 patch grid, 197 tokens, 512-dim embeddings) |
 | Trainable parameters | **3,932,160 (2.5608% of total)**                            |
 | LoRA rank (r)        | 32                                                          |
 | LoRA alpha (α)       | 64                                                          |
