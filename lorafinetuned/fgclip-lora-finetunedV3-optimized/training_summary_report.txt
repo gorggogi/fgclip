@@ -1,0 +1,64 @@
+================================================================================
+🔬 FINAL BOSS: EXHAUSTIVE EXPERIMENT CONFIGURATION & RESULTS SUMMARY
+================================================================================
+
+[1] HARDWARE & ENVIRONMENT
+    🖥️  OS:              Windows 11
+    🐍 Python Version:  3.13.13
+    📦 PyTorch Version: 2.7.1+cu118
+    📦 Transformers:    5.8.0
+    📦 PEFT Version:    0.19.1
+    🐌 GPU:             None (CPU Training)
+    🎲 Global Seed:     12952634091800
+
+[2] MODEL & DATASET
+    🤖 Base Model ID:       qihoo360/fg-clip-base
+    📏 Max Text Length:     77 tokens
+    🔤 Text Padding:        True (Longest in batch)
+    🖼️  Train Images:        420
+    🖼️  Validation Images:   90
+    ⛏️  Mining Strategy:     Hard Negative Category Mining
+
+[3] ARCHITECTURE & LoRA
+    📊 Trainable Params:    1,966,080 (1.2970% of total)
+    🧠 LoRA Rank (r):       16
+    🧠 LoRA Alpha:          32
+    🎯 Target Modules:      {'out_proj', 'v_proj', 'k_proj', 'q_proj'}
+    💧 Dropout:             0.1
+    🧮 Model dtype:         torch.float32
+
+[4] HYPERPARAMETERS & TRAINING
+    ⚙️  Optimizer:           AdamW
+    📉 Start Learn Rate:    3e-05
+    📉 End Learn Rate:      0.0
+    ⚓ Weight Decay:        0.1
+    🎢 Betas (B1, B2):      (0.9, 0.999)
+    🔢 Optimizer Epsilon:   1e-08
+    ⚖️  Loss Function:       CrossEntropyLoss
+    🌡️  Temperature:         0.05 (Manual Strict Override)
+    📦 Train Batch Size:    None
+    📦 Val Batch Size:      16
+    👷 Dataloader Workers:  0
+    📈 Total Steps:         540
+    🔥 Warmup Steps:        108 (Cosine Scheduler)
+
+[5] TRAINING RESULTS
+    📉 Train Loss (at Stop): 0.5472
+    📉 Val Loss (at Stop):   1.1335
+    🏆 Best Val Loss:        1.1335 (Model Saved Here!)
+    🏁 Stopped at Epoch:     20 / 20
+    🛑 Early Stop Patience:  3 epochs
+
+[6] OUTPUT
+    💾 Saved To:            ../lorafinetuned/fgclip-lora-finetunedV3-optimized
+
+[7] DATA AUGMENTATIONS
+Compose(
+    Resize(size=(224, 224), interpolation=bilinear, max_size=None, antialias=True)
+    RandomHorizontalFlip(p=0.5)
+    ColorJitter(brightness=(0.8, 1.2), contrast=(0.8, 1.2), saturation=(0.6, 1.4), hue=(-0.1, 0.1))
+    ToTensor()
+    RandomErasing(p=0.3, scale=(0.02, 0.15), ratio=(0.3, 3.3), value=0, inplace=False)
+    ToPILImage()
+)
+================================================================================
