@@ -3,13 +3,14 @@
 ================================================================================
 
 [1] HARDWARE & ENVIRONMENT
-    🖥️  OS:              Windows 11
-    🐍 Python Version:  3.14.4
-    📦 PyTorch Version: 2.11.0+cpu
-    📦 Transformers:    5.7.0
+    🖥️  OS:              Windows 10
+    🐍 Python Version:  3.13.3
+    📦 PyTorch Version: 2.6.0+cu124
+    📦 Transformers:    4.57.1
     📦 PEFT Version:    0.19.1
-    🐌 GPU:             None (CPU Training)
-    🎲 Global Seed:     425637463100
+    🚀 GPU:             NVIDIA GeForce RTX 3050 Laptop GPU
+    💾 Max VRAM Used:   3.78 GB
+    🎲 Global Seed:     18339741769000
 
 [2] MODEL & DATASET
     🤖 Base Model ID:       qihoo360/fg-clip-base
@@ -23,14 +24,14 @@
     📊 Trainable Params:    3,932,160 (2.5608% of total)
     🧠 LoRA Rank (r):       32
     🧠 LoRA Alpha:          64
-    🎯 Target Modules:      {'q_proj', 'k_proj', 'v_proj', 'out_proj'}
+    🎯 Target Modules:      {'k_proj', 'out_proj', 'q_proj', 'v_proj'}
     💧 Dropout:             0.1
     🧮 Model dtype:         torch.float32
 
 [4] HYPERPARAMETERS & TRAINING
     ⚙️  Optimizer:           AdamW
     📉 Start Learn Rate:    5e-05
-    📉 End Learn Rate:      3.7500000000000003e-05
+    📉 End Learn Rate:      2.9341204441673266e-05
     ⚓ Weight Decay:        0.01
     🎢 Betas (B1, B2):      (0.9, 0.999)
     🔢 Optimizer Epsilon:   1e-08
@@ -43,10 +44,10 @@
     🔥 Warmup Steps:        54 (Cosine Scheduler)
 
 [5] TRAINING RESULTS
-    📉 Train Loss (at Stop): 0.4045
-    📉 Val Loss (at Stop):   1.2461
-    🏆 Best Val Loss:        1.2245 (Model Saved Here!)
-    🏁 Stopped at Epoch:     8 / 20
+    📉 Train Loss (at Stop): 0.2818
+    📉 Val Loss (at Stop):   1.1819
+    🏆 Best Val Loss:        1.1684 (Model Saved Here!)
+    🏁 Stopped at Epoch:     10 / 20
     🛑 Early Stop Patience:  3 epochs
 
 [6] OUTPUT

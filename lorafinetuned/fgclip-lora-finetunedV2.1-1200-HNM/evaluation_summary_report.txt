@@ -1,0 +1,47 @@
+================================================================================
+FINAL BOSS: EXHAUSTIVE EVALUATION RESULTS SUMMARY
+================================================================================
+
+[1] HARDWARE & ENVIRONMENT
+    OS:              Windows 10
+    GPU Used:        NVIDIA GeForce RTX 3050 Laptop GPU
+
+[2] MODELS EVALUATED
+    LoRA Adapter:    fgclip-lora-finetunedV2.1-1200-HNM
+
+[3] DATASET COMPLEXITY
+    Total Queries:   90
+    Gallery Size:    600
+    Max Text Length: 77 tokens
+
+[4] FINAL RETRIEVAL METRICS
+    Recall@1:        80.00%
+    Recall@5:        92.22%
+    Recall@10:       96.67%
+    MRR:             0.8615
+
+[5] FAILURE ANALYSIS SUMMARY
+    Perfect First-Tries: 72 queries (80.0%) - Nailed it at Rank 1
+    Near Misses:         15 queries (16.7%) - Found in top 10, but missed Rank 1
+    Severe Failures:      3 queries (3.3%) - Failed to find in top 10
+    -------------------------------------------------------------------------
+    Total Test Queries:     90 queries
+
+    Category Accuracy:   100.00% (90 queries guessed the correct object type)
+
+[6] SAMPLE RETRIEVAL LEADERBOARD
+    Query: "Light-grey rectangular lunch box, pale blue latch clips and flap compartment, white oval shaped vent button on lid"
+
+    Rank   Item Name                      Score      Status
+    ------------------------------------------------------------
+    #1     lunchbox_041                   0.4157   Top-1
+    #2     lunchbox_074                   0.4100   Top-2
+    #3     lunchbox_030                   0.3873   Top-3
+    #4     lunchbox_050                   0.3667   TRUE MATCH
+    #5     lunchbox_042                   0.3596   Top-5
+    #6     lunchbox_073                   0.3554   Top-6
+    #7     lunchbox_055                   0.3526   Top-7
+    #8     lunchbox_066                   0.3494   Top-8
+    #9     lunchbox_064                   0.3456   Top-9
+    #10    lunchbox_007                   0.3451   Top-10
+================================================================================
