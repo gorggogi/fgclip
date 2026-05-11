@@ -9,8 +9,8 @@
     📦 Transformers:    4.57.1
     📦 PEFT Version:    0.19.1
     🚀 GPU:             NVIDIA GeForce RTX 3050 Laptop GPU
-    💾 Max VRAM Used:   3.75 GB
-    🎲 Global Seed:     7539218848300
+    💾 Max VRAM Used:   2.19 GB
+    🎲 Global Seed:     10443617984700
 
 [2] MODEL & DATASET
     🤖 Base Model ID:       qihoo360/fg-clip-base
@@ -21,16 +21,16 @@
     ⛏️  Mining Strategy:     Hard Negative Category Mining
 
 [3] ARCHITECTURE & LoRA
-    📊 Trainable Params:    2,949,120 (1.9330% of total)
-    🧠 LoRA Rank (r):       24
-    🧠 LoRA Alpha:          48
-    🎯 Target Modules:      {'q_proj', 'v_proj', 'k_proj', 'out_proj'}
+    📊 Trainable Params:    2,457,600 (1.6160% of total)
+    🧠 LoRA Rank (r):       20
+    🧠 LoRA Alpha:          40
+    🎯 Target Modules:      {'out_proj', 'k_proj', 'q_proj', 'v_proj'}
     💧 Dropout:             0.1
     🧮 Model dtype:         torch.float32
 
 [4] HYPERPARAMETERS & TRAINING
     ⚙️  Optimizer:           AdamW
-    📉 Start Learn Rate:    3e-05
+    📉 Start Learn Rate:    2e-05
     📉 End Learn Rate:      0.0
     ⚓ Weight Decay:        0.1
     🎢 Betas (B1, B2):      (0.9, 0.999)
@@ -38,20 +38,20 @@
     ⚖️  Loss Function:       CrossEntropyLoss
     🌡️  Temperature:         0.05 (Manual Strict Override)
     📦 Train Batch Size:    None
-    📦 Val Batch Size:      16
+    📦 Val Batch Size:      8
     👷 Dataloader Workers:  0
-    📈 Total Steps:         540
-    🔥 Warmup Steps:        108 (Cosine Scheduler)
+    📈 Total Steps:         1060
+    🔥 Warmup Steps:        212 (Cosine Scheduler)
 
 [5] TRAINING RESULTS
-    📉 Train Loss (at Stop): 0.4668
-    📉 Val Loss (at Stop):   1.1277
-    🏆 Best Val Loss:        1.1265 (Model Saved Here!)
+    📉 Train Loss (at Stop): 0.4353
+    📉 Val Loss (at Stop):   1.0177
+    🏆 Best Val Loss:        1.0173 (Model Saved Here!)
     🏁 Stopped at Epoch:     20 / 20
     🛑 Early Stop Patience:  15 epochs
 
 [6] OUTPUT
-    💾 Saved To:            ../lorafinetuned/fgclip-lora-finetunedV4-optimized
+    💾 Saved To:            ../lorafinetuned/fgclip-lora-finetunedV5-1200-HNM
 
 [7] DATA AUGMENTATIONS
 Compose(

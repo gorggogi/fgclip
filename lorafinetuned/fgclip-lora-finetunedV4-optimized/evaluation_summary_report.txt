@@ -16,15 +16,15 @@
     📏 Max Text Length: 77 tokens
 
 [4] 🏆 FINAL RETRIEVAL METRICS 🏆
-    🥇 Recall@1:        81.11%
-    🥈 Recall@5:        96.67%
-    🥉 Recall@10:       97.78%
-    📈 MRR:             0.8819
+    🥇 Recall@1:        78.89%
+    🥈 Recall@5:        95.56%
+    🥉 Recall@10:       96.67%
+    📈 MRR:             0.8632
 
 [5] 📉 FAILURE ANALYSIS SUMMARY
-    🎯 Perfect First-Tries: 73 queries (81.1%) - Nailed it at Rank 1
-    🤏 Near Misses:         15 queries (16.7%) - Found in top 10, but missed Rank 1
-    💥 Severe Failures:      2 queries (2.2%) - Failed to find in top 10
+    🎯 Perfect First-Tries: 71 queries (78.9%) - Nailed it at Rank 1
+    🤏 Near Misses:         16 queries (17.8%) - Found in top 10, but missed Rank 1
+    💥 Severe Failures:      3 queries (3.3%) - Failed to find in top 10
     -------------------------------------------------------------------------
     Total Test Queries:     90 queries
 
@@ -35,14 +35,14 @@
 
     Rank   Item Name                      Score      Status
     ------------------------------------------------------------
-    #1     lunchbox_074                   0.4163   📍 Top-1
-    #2     lunchbox_041                   0.3940   📍 Top-2
-    #3     lunchbox_030                   0.3572   📍 Top-3
-    #4     lunchbox_050                   0.3554   ✅ TRUE MATCH
-    #5     lunchbox_082                   0.3521   📍 Top-5
-    #6     lunchbox_014                   0.3495   📍 Top-6
-    #7     lunchbox_042                   0.3416   📍 Top-7
-    #8     lunchbox_073                   0.3303   📍 Top-8
-    #9     lunchbox_055                   0.3299   📍 Top-9
-    #10    lunchbox_072                   0.3277   📍 Top-10
+    #1     lunchbox_041                   0.4159   📍 Top-1
+    #2     lunchbox_074                   0.4114   📍 Top-2
+    #3     lunchbox_050                   0.3851   ✅ TRUE MATCH
+    #4     lunchbox_030                   0.3772   📍 Top-4
+    #5     lunchbox_042                   0.3601   📍 Top-5
+    #6     lunchbox_082                   0.3491   📍 Top-6
+    #7     lunchbox_055                   0.3442   📍 Top-7
+    #8     lunchbox_014                   0.3368   📍 Top-8
+    #9     lunchbox_080                   0.3312   📍 Top-9
+    #10    lunchbox_073                   0.3235   📍 Top-10
 ================================================================================

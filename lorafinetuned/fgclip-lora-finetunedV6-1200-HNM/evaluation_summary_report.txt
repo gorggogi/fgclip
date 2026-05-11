@@ -7,7 +7,8 @@
     🚀 GPU Used:        NVIDIA GeForce RTX 3050 Laptop GPU
 
 [2] MODELS EVALUATED
-    🔌 LoRA Adapter:    fgclip-lora-finetunedV3-optimized
+    🤖 Base Model:      qihoo360/fg-clip-base
+    🔌 LoRA Adapter:    fgclip-lora-finetunedV6-1200-HNM
 
 [3] DATASET COMPLEXITY
     🔍 Total Queries:   90
@@ -15,14 +16,14 @@
     📏 Max Text Length: 77 tokens
 
 [4] 🏆 FINAL RETRIEVAL METRICS 🏆
-    🥇 Recall@1:        80.00%
+    🥇 Recall@1:        82.22%
     🥈 Recall@5:        96.67%
     🥉 Recall@10:       96.67%
-    📈 MRR:             0.8733
+    📈 MRR:             0.8854
 
 [5] 📉 FAILURE ANALYSIS SUMMARY
-    🎯 Perfect First-Tries: 72 queries (80.0%) - Nailed it at Rank 1
-    🤏 Near Misses:         15 queries (16.7%) - Found in top 10, but missed Rank 1
+    🎯 Perfect First-Tries: 74 queries (82.2%) - Nailed it at Rank 1
+    🤏 Near Misses:         13 queries (14.4%) - Found in top 10, but missed Rank 1
     💥 Severe Failures:      3 queries (3.3%) - Failed to find in top 10
     -------------------------------------------------------------------------
     Total Test Queries:     90 queries
@@ -34,14 +35,14 @@
 
     Rank   Item Name                      Score      Status
     ------------------------------------------------------------
-    #1     lunchbox_041                   0.4208   📍 Top-1
-    #2     lunchbox_074                   0.4124   📍 Top-2
-    #3     lunchbox_030                   0.3931   📍 Top-3
-    #4     lunchbox_050                   0.3720   ✅ TRUE MATCH
-    #5     lunchbox_042                   0.3719   📍 Top-5
-    #6     lunchbox_055                   0.3594   📍 Top-6
-    #7     lunchbox_073                   0.3573   📍 Top-7
-    #8     lunchbox_082                   0.3507   📍 Top-8
-    #9     lunchbox_014                   0.3417   📍 Top-9
-    #10    lunchbox_004                   0.3328   📍 Top-10
+    #1     lunchbox_074                   0.4162   📍 Top-1
+    #2     lunchbox_041                   0.4045   📍 Top-2
+    #3     lunchbox_030                   0.3762   📍 Top-3
+    #4     lunchbox_050                   0.3653   ✅ TRUE MATCH
+    #5     lunchbox_042                   0.3575   📍 Top-5
+    #6     lunchbox_082                   0.3542   📍 Top-6
+    #7     lunchbox_055                   0.3489   📍 Top-7
+    #8     lunchbox_014                   0.3463   📍 Top-8
+    #9     lunchbox_073                   0.3350   📍 Top-9
+    #10    lunchbox_004                   0.3308   📍 Top-10
 ================================================================================
