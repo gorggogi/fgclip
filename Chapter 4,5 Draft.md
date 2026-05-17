@@ -155,7 +155,7 @@ Training images pass through augmentation pipeline to simulate the variability o
 
    **LoRA integration**
 
-   LoRA adapters are injected into the attention projection matrices q\_proj, k\_proj, v\_proj, and out\_proj of every transformer layer in both the vision and text encoders. For each frozen weight matrix W  ∈d x k, two trainable matrices A  ∈r x kand B  ∈d x r are introduced. During the forward pass, the output is:
+   LoRA adapters are injected into the attention projection matrices q\_proj, k\_proj, v\_proj, and out\_proj of every transformer layer in both the vision and text encoders. For each frozen weight matrix W ∈ ℝ^(d×k), two trainable matrices A ∈ ℝ^(r×k) and B ∈ ℝ^(d×r) are introduced. During the forward pass, the output is:
 
    W'(x)=Wx+ar  BAx
 
@@ -252,7 +252,7 @@ After every training epoch, the model is evaluated on the validation set (with g
 | :---: | ----- | ----- | ----- |
 | 1 | 420 dataset pairs | Random shuffle (V1) or Categorical Batch Sampler (V2/V3, hard negative mining) | N image-caption pairs per step  |
 | 2 | N images \+ 2N captions | LoRA-adapted dual-stream encoding (ViT-B/16 \+ text transformer) | N image embeds (512-d) \+ 2N text embeds (512-d) |
-| 3 | All embeddings | L2-normalize → cosine sim → T → CE loss over (N×2N) matrix | Scalar loss  |
+| 3 | All embeddings | L2-normalize → cosine sim → τ → CE loss over (N×2N) matrix | Scalar loss  |
 | 4 | Loss scalar | AdamW \+ cosine LR \+ warmup \+ early stopping | LoRA weight updates (ΔW \= BA)  |
 
 The table above illustrates the complete four-stage fine-tuning pipeline. Each stage takes a specific input, performs a defined operation, and produces a defined output that feeds into the next stage. Stages 1 through 4 represent the data flow from raw dataset pairs to updated LoRA weights.
