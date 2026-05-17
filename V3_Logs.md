@@ -118,7 +118,7 @@ Resize(size=(224, 224), interpolation=bilinear)
 RandomHorizontalFlip(p=0.5)
 ColorJitter(brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1)
 ToTensor()
-RandomErasing(p=0.3, scale=(0.02, 0.15), ratio=(0.3, 3.3), value=0)
+RandomErasing(p=0.3, scale=(0.02, 0.15))
 ToPILImage()
 )
 
