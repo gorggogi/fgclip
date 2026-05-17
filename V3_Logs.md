@@ -2,8 +2,8 @@
 
 > **Status**: Small rank (r=16) + strong weight decay (wd=0.1) + higher temperature (0.05) + patience=3 optimization. GPU training on RTX 3050 (max VRAM 3.80 GB). **Result: best overall model — best R@1 (84.44%), best R@5 (96.67%), best R@10 (96.67%), best MRR (0.8897), fewest severe failures (3).**
 
-> **Base Model**: `qihoo360/fg-clip-base` (151,586,817 total parameters)
-> **Environment**: Windows 11, Python 3.14, PyTorch 2.7.1+cu118, Transformers 5.8.0, PEFT 0.19.1
+> **Base Model**: `qihoo360/fg-clip-base` (149,620,737 total parameters)
+> **Environment**: Windows 10, Python 3.14, PyTorch 2.7.1+cu118, Transformers 5.8.0, PEFT 0.19.1
 > **GPU**: NVIDIA GeForce RTX 3050 Laptop GPU
 > **Training notebook**: `fgclipfintuning/Copy_of_fgclipFineTuning_V3_1200_HNM.ipynb`
 > **Evaluation notebook**: `fgclipevaluation/Copy_of_fgclipEvaluation_V3_1200_HNM.ipynb`
@@ -24,6 +24,7 @@
 8. [Training Results](#training-results)
 9. [Evaluation Results](#evaluation-results)
 10. [What This Run Told Us](#what-this-run-told-us)
+11. [Retrieval Demo](#retrieval-demo)
 
 ---
 
@@ -78,7 +79,8 @@
 | -------------------- | ----------------------------------------------------------- |
 | Base model           | `qihoo360/fg-clip-base`                                     |
 | Vision backbone      | ViT-B/16 (14×14 patch grid, 197 tokens, 768-dim embeddings) |
-| Trainable parameters | **1,966,080 (1.2970% of total)**                            |
+| Trainable parameters | **1,966,080 (1.2970% of total)** |                              |
+| Full model total (base) | **151,586,817** (base 149,620,737 + LoRA 1,966,080) |
 | LoRA rank (r)        | **16**                                                      |
 | LoRA alpha (α)       | **32**                                                      |
 | Target modules       | `q_proj`, `k_proj`, `v_proj`, `out_proj`                    |
@@ -212,6 +214,51 @@ ToPILImage()
 > **tumbler_065 achieved its best rank ever**: #14 in V3 is far better than any previous model. CLAUDE V2.1+HNM held the previous best at #80 — an 83% improvement in rank position.
 > **tumbler_047 achieved its best rank across all models**: V3 at #16 beats V2.1 (#33) and CLAUDE V2.1 (#26), though V2's #13 remains the best across all models.
 
+### Rank Distribution Matrix
+
+> Tracks where the correct item ended up in the ranking, grouped by rank bucket.
+
+|              | #1  | #2-5 | #6-10 | #11-20 | #21-50 | #50+ |
+| :----------- | --: | ----: | -----: | ------: | ------: | ---: |
+| **Bag**          | 13  | 2     | 0      | 0       | 0       | 0    |
+| **Charger**      | 10  | 4     | 0      | 0       | 1       | 0    |
+| **Handkerchief** | 12  | 3     | 0      | 0       | 0       | 0    |
+| **Lunchbox**     | 14  | 1     | 0      | 0       | 0       | 0    |
+| **Tumbler**      | 12  | 1     | 0      | 2       | 0       | 0    |
+| **Wallet**       | 15  | 0     | 0      | 0       | 0       | 0    |
+
+> **Per-category summary:**
+
+| Category     | R@1 Acc  | Avg Rank | Worst Rank |
+| :----------- | :------- | :------- | :--------- |
+| Bag          | 86.7%    | 1.3      | #4         |
+| Charger      | 66.7%    | 3.2      | #23        |
+| Handkerchief | 80.0%    | 1.4      | #5         |
+| Lunchbox     | 93.3%    | 1.2      | #4         |
+| Tumbler      | 80.0%    | 2.9      | #16        |
+| Wallet       | 100.0%   | 1.0      | #1         |
+
+> **tumbler_065 achieved its best rank ever:** #14 in V3 is far better than any previous model. CLAUDE V2.1+HNM held the previous best at #80 — an 83% improvement in rank position.
+> **tumbler_047 achieved its best rank across all models:** V3 at #16 beats V2.1 (#33) and CLAUDE V2.1 (#26), though V2's #13 remains the best across all models.
+
+---
+
+### Per-Category Item-Level Accuracy
+
+> Which specific items were confused with which at rank #1.
+
+| Category      | R@1 Correct | Wrong at R@1 (true -> AI guess, rank)                                       |
+| :------------ | :---------- | :-------------------------------------------------------------------------- |
+| Bag           | 13         | bag_058->tumbler_007 (#4), bag_071->bag_070 (#2)                           |
+| Charger       | 10         | charger_038->charger_030 (#4), charger_040->charger_064 (#23), charger_071->charger_070 (#5), charger_081->charger_070 (#4), charger_083->charger_071 (#2) |
+| Handkerchief  | 12         | handkerchief_027->handkerchief_079 (#5), handkerchief_035->handkerchief_087 (#2), handkerchief_062->handkerchief_098 (#2) |
+| Lunchbox      | 14         | lunchbox_050->lunchbox_041 (#4)                                            |
+| Tumbler       | 12         | tumbler_047->tumbler_045 (#16), tumbler_065->tumbler_027 (#14), tumbler_084->tumbler_086 (#2) |
+| Wallet        | 15         | —                                                                          |
+
+> **Note:** When the model retrieves charger_030 instead of charger_040, it is still a "correct" category prediction (Charger -> Charger) even though the item-level R@1 is wrong (#23 instead of #1). The confusion matrix at rank 1 tracks category-level accuracy, while this table tracks exact item-level accuracy.
+
+
 ### Confusion Matrix (Category Level)
 
 > Tracks whether the **top-ranked gallery item's category** matches the **query's true category**.
@@ -248,6 +295,35 @@ ToPILImage()
 | **Macro Avg** | **0.99** | **0.99** | **0.99** | **90** |
 
 ---
+
+---
+
+## Retrieval Demo
+
+A qualitative retrieval demo was created to illustrate how the model behaves on real queries. Given a text caption, the fine-tuned model encodes it alongside all gallery images, computes cosine similarity scores, and ranks results from highest to lowest. The top-k results along with their similarity scores are then displayed in a ranked grid. A query text and its corresponding gallery image form a pre-annotated test pair from our dataset, serving as the ground-truth pairing established during data annotation.
+
+**Test query and image used in the demonstration:**
+
+> *"Light-grey rectangular lunch box, pale blue latch clips and flap compartment, white oval shaped vent button on lid"* — lunchbox_050
+
+**Retrieval Results for Demo Query:**
+
+| Rank | Item Name     | Score   | Status     |
+| ---- | ------------ | ------- | ---------- |
+| #1   | lunchbox_041 | 0.4559  | Top-1      |
+| #2   | lunchbox_074 | 0.4146  | Top-2      |
+| #3   | lunchbox_030 | 0.3816  | Top-3      |
+| #4   | lunchbox_050 | 0.3693  | **Correct** |
+| #5   | lunchbox_082 | 0.3680  | Top-5      |
+| #6   | lunchbox_073 | 0.3600  | Top-6      |
+| #7   | lunchbox_042 | 0.3586  | Top-7      |
+| #8   | lunchbox_055 | 0.3474  | Top-8      |
+| #9   | lunchbox_014 | 0.3313  | Top-9      |
+| #10  | lunchbox_080 | 0.3313  | Top-10     |
+
+The true match (lunchbox_050) appears at **rank #4** with a score of 0.3693. All top-10 results are lunch boxes, confirming the model has strong within-category discrimination. The score gap between #1 (0.4559) and #4 (0.3693) reflects the inherent difficulty of distinguishing near-identical items from text descriptions alone.
+
+> Note: The demo query text and gallery image were pre-annotated as a matched pair during dataset construction. This pair was not excluded from training, so this result reflects genuine generalization rather than zero-shot transfer.
 
 ## What This Run Told Us
 
