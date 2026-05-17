@@ -36,7 +36,7 @@ When applied to the study's experimental configuration, the efficiency of this a
      
    The dataset was partitioned as follows  
    :  
-   **Table 2.1-1. Data Split per Category (Trainâ€“Validationâ€“Test)**
+   **Table 2.1-1. Data Split per Category (Train–Validation–Test)**
 
 | Category | Total Pairs | Train (70%) | Validation (15%) | Test (15%) |
 | :---- | :---- | :---- | :---- | :---- |
@@ -85,7 +85,7 @@ An intersection rule was introduced to control which attributes appear in the po
 
 Training images pass through augmentation pipeline to simulate the variability of of typical user-submitted lost and found photographs:
 
-* Resize to 224 Ã— 224  
+* Resize to 224 × 224  
 * Random horizontal flip: simulates different viewing angles and orientations  
 * Color jitter: changes brightness, contrast, saturation, and hue to account for camera and lighting variation  
 * Random erasing: randomly masks a rectangular region, preventing over-reliance on a single salient feature (e.g., a brand logo) and encouraging the model to leverage shape, texture, and material cues holistically
@@ -107,7 +107,7 @@ Training images pass through augmentation pipeline to simulate the variability o
 
    	**Phase 1: Grouping**  
    	  
-   All 420 training pairs are partitioned by their category, extracted from the image filename (e.g â€œtumbler\_47â€ â†’ â€œtumblerâ€). This produces six lists, one per category (Bags, Chargers, Tumblers, Wallets, Handkerchiefs, Lunchboxes) each containing 70 indices.  
+   All 420 training pairs are partitioned by their category, extracted from the image filename (e.g "tumbler\_47" → "tumbler"). This produces six lists, one per category (Bags, Chargers, Tumblers, Wallets, Handkerchiefs, Lunchboxes) each containing 70 indices.  
      
    ![][image1]  
      
@@ -155,13 +155,13 @@ Training images pass through augmentation pipeline to simulate the variability o
 
    **LoRA integration**
 
-   LoRA adapters are injected into the attention projection matrices q\_proj, k\_proj, v\_proj, and out\_proj of every transformer layer in both the vision and text encoders. For each frozen weight matrix W  â„d x k, two trainable matrices A  â„r x kand B  â„d x r are introduced. During the forward pass, the output is:
+   LoRA adapters are injected into the attention projection matrices q\_proj, k\_proj, v\_proj, and out\_proj of every transformer layer in both the vision and text encoders. For each frozen weight matrix W  ∈d x k, two trainable matrices A  ∈r x kand B  ∈d x r are introduced. During the forward pass, the output is:
 
    W'(x)=Wx+ar  BAx
 
    **Equation 3\. Lora Forward Pass**
 
-   where W is the frozen pre-trained weight matrix, B and A are the two trainable low-rank matrices, Î± controls how strongly the LoRA update influences the output, and r is the rank of the low-rank subspace.
+   where W is the frozen pre-trained weight matrix, B and A are the two trainable low-rank matrices, α controls how strongly the LoRA update influences the output, and r is the rank of the low-rank subspace.
 
    **Output of Stage 2\.** Two embedding tensors: N normalized image embeddings and 2N normalized text embeddings, each of dimension 512, in the shared FG-CLIP embedding space.
 
@@ -173,7 +173,7 @@ Training images pass through augmentation pipeline to simulate the variability o
 
    **Pseudocode 3.3-1. L2 Normalization**
 
-   The code above illustrates how both image and text embeddings are L2-normalized, they are scaled to have a unit length of 1 so that their dot product directly results in a cosine similarity score between âˆ’1 and 1\. This prevents differences in embedding magnitude from affecting similarity scores, only the direction of each embedding vector is considered.
+   The code above illustrates how both image and text embeddings are L2-normalized, they are scaled to have a unit length of 1 so that their dot product directly results in a cosine similarity score between −1 and 1\. This prevents differences in embedding magnitude from affecting similarity scores, only the direction of each embedding vector is considered.
 
 **Cosine similarity matrix (Training)**
 
@@ -183,17 +183,17 @@ The N x 2N similarity matrix S is computed as the dot product of image and text 
 
 **Equation 4\. Cosine Similarity Matrix During Training** 
 
-Where T is the temperature, i is the row index (image index, i \= 1â€¦N), and j is the column index (caption index, j \= 1â€¦N). The first N entries correspond to the positive captions paired with each image, and the last N entries correspond to the hard negative captions for each image. The temperature T controls how spread out the similarity scores are. A smaller T makes the scores more spread apart, highlighting the differences between similar and dissimilar pairs more sharply, while a larger T compresses all scores closer together, making them more uniform. 
+Where τ is the temperature, i is the row index (image index, i = 1…N), and j is the column index (caption index, j = 1…N). The first N entries correspond to the positive captions paired with each image, and the last N entries correspond to the hard negative captions for each image. The temperature T controls how spread out the similarity scores are. A smaller T makes the scores more spread apart, highlighting the differences between similar and dissimilar pairs more sharply, while a larger T compresses all scores closer together, making them more uniform. 
 
 The equation above defines how each entry in the N x 2N similarity matrix is computed. Each row represents one image, and each column represents one caption. The dot product measures how aligned the image and text embeddings are, then the result is divided by temperature T to control the sharpness of the similarity distribution. Note that normalization denominator is omitted here because both embeddings are already L2-normalized in Stage 3 (||i\_i|| \= ||t\_j|| \= 1\. The general cosine similarity form with the denominator is given in Equation 3.5 of the main paper document.
 
-After encoding, and normalization, each image has a 512-dimensional embedding e\_img and each caption has a 512-dimensional embedding e\_text. The similarity between a given image and caption is computed as the dot product of their normalized embeddings, scaled by temperature Ï„:
+After encoding, and normalization, each image has a 512-dimensional embedding e\_img and each caption has a 512-dimensional embedding e\_text. The similarity between a given image and caption is computed as the dot product of their normalized embeddings, scaled by temperature τ:
 
 For a positive pair (the correct caption for the image), the similarity might be:
 
 S\_correct \= (0.42)(0.45) \+ (0.38)(0.41) \+ (0.29)(0.32) \+ ... (512 dimensions) \= 0.8231
 
-After dividing by temperature Ï„ \= 0.05, the logit becomes:
+After dividing by temperature τ \= 0.05, the logit becomes:
 
 logit \= 0.8231 / 0.05 \= 16.46
 
@@ -252,8 +252,8 @@ After every training epoch, the model is evaluated on the validation set (with g
 | :---: | ----- | ----- | ----- |
 | 1 | 420 dataset pairs | Random shuffle (V1) or Categorical Batch Sampler (V2/V3, hard negative mining) | N image-caption pairs per step  |
 | 2 | N images \+ 2N captions | LoRA-adapted dual-stream encoding (ViT-B/16 \+ text transformer) | N image embeds (512-d) \+ 2N text embeds (512-d) |
-| 3 | All embeddings | L2-normalize â†’ cosine sim â†’ T â†’ CE loss over (NÃ—2N) matrix | Scalar loss  |
-| 4 | Loss scalar | AdamW \+ cosine LR \+ warmup \+ early stopping | LoRA weight updates (Î”W \= BA)  |
+| 3 | All embeddings | L2-normalize → cosine sim → T → CE loss over (N×2N) matrix | Scalar loss  |
+| 4 | Loss scalar | AdamW \+ cosine LR \+ warmup \+ early stopping | LoRA weight updates (ΔW \= BA)  |
 
 The table above illustrates the complete four-stage fine-tuning pipeline. Each stage takes a specific input, performs a defined operation, and produces a defined output that feeds into the next stage. Stages 1 through 4 represent the data flow from raw dataset pairs to updated LoRA weights.
 
@@ -280,7 +280,7 @@ Three fine-tuning configurations were developed to trace the impact of each desi
 | Hyperparameter | V1 | V2 | V3 |
 | :---- | :---- | :---- | :---- |
 | LoRA rank (r) | 8 | 32 | **16** |
-| LoRA alpha (Î±) | 16 | 64 | **32** |
+| LoRA alpha (α) | 16 | 64 | **32** |
 | Target modules | qproj, vproj | qproj, kproj, vproj, outproj | qproj, kproj, vproj, outproj |
 | LoRA dropout | 0.1 | 0.1 | 0.1 |
 | Trainable parameters | 491,520 (0.33%) | 3,932,160 (2.56%) | 1,966,080 (1.30%) |
@@ -291,7 +291,7 @@ Three fine-tuning configurations were developed to trace the impact of each desi
 | Cosine end LR | N/A | **0.0 (to zero)** | **0.0 (to zero)** |
 | Weight decay | 0.01 | 0.01 | **0.1** |
 | **Loss** | Single-image | Single-image | Single-image |
-| Temperature (Ï„) | ~0.07 (HF model default) / **0.0122 (auto-scaled during training)** | 0.02 (fixed) | **0.05 (fixed)** |
+| Temperature (τ) | ~0.07 (HF model default) / **0.0122 (auto-scaled during training)** | 0.02 (fixed) | **0.05 (fixed)** |
 | Loss type | Single-image | Single-image | Single-image |
 | Batch size | 16 | 16 | 16 |
 | Batching strategy | Random shuffle | **Category-grouped** | **Category-grouped** |
@@ -303,36 +303,36 @@ The table above compares the three experimental configurations side by side acro
 
 **4.1.2 Key Design Decisions**
 
-**V1 â†’ V2: Architecture and Training** 
+**V1 → V2: Architecture and Training** 
 
 V1 established a baseline using conservative LoRA settings (rank 8, q/v projections only, no scheduler, brightness-only augmentation). V2 introduced a suite of changes to the architecture, training procedure, and data pipeline:
 
-**LoRA rank 8 â†’ 32, q/v â†’ q/k/v/out.** Expanding both the rank and target modules gives the adapter significantly more capacity to learn fine-grained visual-textual alignment. Adding kproj and outproj enables the adapter to directly modify the query-key computation which is how the model decides which tokens to attend to rather than only adjusting the value aggregation that follows. This increases trainable parameters from \~0.33% to \~2.56% of the full model.
+**LoRA rank 8 → 32, q/v → q/k/v/out.** Expanding both the rank and target modules gives the adapter significantly more capacity to learn fine-grained visual-textual alignment. Adding kproj and outproj enables the adapter to directly modify the query-key computation which is how the model decides which tokens to attend to rather than only adjusting the value aggregation that follows. This increases trainable parameters from \~0.33% to \~2.56% of the full model.
 
-**Random shuffling â†’ Category-grouped batching.** The custom Categorical Batch Sampler groups pairs by category prefix (e.g. bag\_012 â†’ "bag"). Each category's shuffled index list is chunked into batches of 16\. Every training batch therefore contains 16 pairs from the same category, with all 16 hard negatives being plausible matches for each image, creating a much harder discrimination task than random batching.
+**Random shuffling → Category-grouped batching.** The custom Categorical Batch Sampler groups pairs by category prefix (e.g. bag\_012 → "bag"). Each category's shuffled index list is chunked into batches of 16\. Every training batch therefore contains 16 pairs from the same category, with all 16 hard negatives being plausible matches for each image, creating a much harder discrimination task than random batching.
 
-**Temperature 0.07 â†’ 0.02.** A lower temperature sharpens the softmax distribution, resulting in steeper gradient signals and a stricter penalty for placing probability mass on hard negatives.
+**Temperature 0.07 → 0.02.** A lower temperature sharpens the softmax distribution, resulting in steeper gradient signals and a stricter penalty for placing probability mass on hard negatives.
 
-**Fixed LR â†’ Cosine scheduler with warmup.** A 10% linear warmup period stabilizes early training when the LoRA matrices are near-zero initialization. The cosine decay enables smooth convergence without abrupt learning rate drops.
+**Fixed LR → Cosine scheduler with warmup.** A 10% linear warmup period stabilizes early training when the LoRA matrices are near-zero initialization. The cosine decay enables smooth convergence without abrupt learning rate drops.
 
-* **No early stopping â†’ Patience \= 3\.** Training halts when validation loss fails to improve for three consecutive epochs, preserving the best-generalization checkpoint rather than the final one.  
-* **Brightness-only â†’ Full-spectrum ColorJitter.** V1 only jittered brightness, leaving contrast and saturation invariant. V2 \+ HNM applies brightness, contrast, saturation, and hue jitter, giving a more uniform robustness envelope against real-world lighting variation.  
-* The combined effect was a substantial improvement from V1: \+7.78 on R@1 (71.11% â†’ 78.89%), \+3.34 on R@10 (93.33% â†’ 96.67%), and âˆ’3 severe failures (6 â†’ 3).  
+* **No early stopping → Patience \= 3\.** Training halts when validation loss fails to improve for three consecutive epochs, preserving the best-generalization checkpoint rather than the final one.  
+* **Brightness-only → Full-spectrum ColorJitter.** V1 only jittered brightness, leaving contrast and saturation invariant. V2 \+ HNM applies brightness, contrast, saturation, and hue jitter, giving a more uniform robustness envelope against real-world lighting variation.  
+* The combined effect was a substantial improvement from V1: \+7.78 on R@1 (71.11% → 78.89%), \+3.34 on R@10 (93.33% → 96.67%), and −3 severe failures (6 → 3).  
     
     
-  **V2 â†’ V3: Optimal Regularization**  
+  **V2 → V3: Optimal Regularization**  
 
 
   While V2 outperformed V1 through expanded LoRA capacity and category-grouped batching, the combination of r=32 with wd=0.01 introduced a moderate overfitting tendency: training loss reached 0.2818 while validation loss remained at 1.1819 at epoch 10, compared to best checkpoint at epoch 7 (train loss 0.4608, val loss 1.1684). V3 applies targeted regularization to unlock the best generalization:
 
-* **r = 32 â†’ 16.** Halving the LoRA rank acts as a structural regularizer, reducing the adapter's capacity to memorize training pairs. This forces the model to learn more generalizable visual-text alignments rather than overfitting to specific examples.  
-* **Î± = 64 â†’ 32.** Keeping Î±/r constant at 2 maintains the same effective scaling behavior while reducing the absolute magnitude of LoRA updates.  
-* **Weight decay 0.01 â†’ 0.1.** Ten times stronger weight decay penalizes large LoRA weights, encouraging the model to use smaller, more generalizable adaptations. This is the single most impactful change.  
-* **Temperature 0.02 â†’ 0.05.** Higher temperature produces softer similarity logits, giving the model more gradient signal on near-miss cases. This correlates with V3 achieving the best MRR of any configuration.  
+* **r = 32 → 16.** Halving the LoRA rank acts as a structural regularizer, reducing the adapter's capacity to memorize training pairs. This forces the model to learn more generalizable visual-text alignments rather than overfitting to specific examples.  
+* **α = 64 → 32.** Keeping α/r constant at 2 maintains the same effective scaling behavior while reducing the absolute magnitude of LoRA updates.  
+* **Weight decay 0.01 → 0.1.** Ten times stronger weight decay penalizes large LoRA weights, encouraging the model to use smaller, more generalizable adaptations. This is the single most impactful change.  
+* **Temperature 0.02 → 0.05.** Higher temperature produces softer similarity logits, giving the model more gradient signal on near-miss cases. This correlates with V3 achieving the best MRR of any configuration.  
 * **Cosine end LR (both V2 and V3 decay to 0).** Decaying to zero instead of a residual LR acts as a built-in early-stop mechanism, stopping weight updates in the final epochs. V3 further benefits from the 20% warmup combined with this zero-decay strategy, giving the model more time to stabilize before the cosine schedule takes the learning rate to zero.  
-* **Warmup 10% â†’ 20%.** Doubling warmup from 10% gives the model more time to stabilize before taking large gradient steps.  
-* **Batch size 16 (unchanged).** Unlike V2.1, V3 does not halve the batch size â€” it keeps 16 hard negatives per step and achieves better results through regularization alone.  
-* The result: V3 achieves the best overall performance â€” best Recall@1 (84.44%), best Recall@5 (96.67%), best MRR (0.8897), and the fewest severe failures (3) â€” demonstrating that smaller, better-regularized LoRA adapters outperform larger ones on this dataset.
+* **Warmup 10% → 20%.** Doubling warmup from 10% gives the model more time to stabilize before taking large gradient steps.  
+* **Batch size 16 (unchanged).** Unlike V2.1, V3 does not halve the batch size "— it keeps 16 hard negatives per step and achieves better results through regularization alone.  
+* The result: V3 achieves the best overall performance "— best Recall@1 (84.44%), best Recall@5 (96.67%), best MRR (0.8897), and the fewest severe failures (3) "— demonstrating that smaller, better-regularized LoRA adapters outperform larger ones on this dataset.
 
 **4.1.3 Retrieval Metrics**
 
@@ -348,7 +348,7 @@ V1 established a baseline using conservative LoRA settings (rank 8, q/v projecti
 
 The table above shows the retrieval performance of all three configurations on the 90-item test set. Recall@1, Recall@5, and Recall@10 measure how often the correct item appears within the top 1, 5, and 10 retrieved results respectively. MRR (Mean Reciprocal Rank) measures the average reciprocal rank of the correct item across all queries, and severe failures count how many test items were not retrieved within the top 10\. V3 achieves the best overall performance with 84.44% R@1, 96.67% R@5, and 0.8897 MRR, outperforming all previous configurations on every retrieval metric. This demonstrates that smaller, more heavily regularized LoRA adapters generalize better on this dataset than larger ones.
 
-The reliance on Recall@K as a primary evaluation metric is supported by recent embedding-based retrieval frameworks. As discussed by Krasnov, 2024, threshold Recall (R@k) serves as an effective measure for determining whether relevant items appear within the top retrieved outputs. By applying an automated evaluation procedure to key architectures on the massive public Wayfair Annotation Dataset (WANDS), Krasnov demonstrated that these systems achieved an R@1000 of 84% (Â±9%), performing at the level of state-of-the-art (SOTA) models. Although direct score comparison is limited due to the differences in dataset scale and threshold size, the Wayfair Annotation Dataset (WANDS) consists of 480 queries, 42,994 unique products, and over 233,000 human-annotated relevance judgements. Achieving 96.67% Recall@5 demonstrates that the proposed V3 configuration performs at a highly competitive level, successfully ranking relevant items within the strictest, most user-facing retrieval windows.
+The reliance on Recall@K as a primary evaluation metric is supported by recent embedding-based retrieval frameworks. As discussed by Krasnov, 2024, threshold Recall (R@k) serves as an effective measure for determining whether relevant items appear within the top retrieved outputs. By applying an automated evaluation procedure to key architectures on the massive public Wayfair Annotation Dataset (WANDS), Krasnov demonstrated that these systems achieved an R@1000 of 84% (±9%), performing at the level of state-of-the-art (SOTA) models. Although direct score comparison is limited due to the differences in dataset scale and threshold size, the Wayfair Annotation Dataset (WANDS) consists of 480 queries, 42,994 unique products, and over 233,000 human-annotated relevance judgements. Achieving 96.67% Recall@5 demonstrates that the proposed V3 configuration performs at a highly competitive level, successfully ranking relevant items within the strictest, most user-facing retrieval windows.
 
 The MRR metric's effectiveness for ranking evaluation is further validated by contemporary dense retrieval systems. Wang et al. (2023) report that SimLM, a state-of-the-art pre-trained dense passage retrieval model, achieves an MRR@10 of 0.411 on the MS MARCO benchmark, the standard large-scale passage ranking dataset containing 6,980 development queries. While direct comparison is limited due to differences in dataset scale (MS MARCO vs. our 90-item domain-focused test set) and domain specificity, the V3 configuration's MRR of 0.8897 demonstrates strong performance on specialized retrieval tasks and validates the effectiveness of our proposed architecture.
 
@@ -356,19 +356,19 @@ The MRR metric's effectiveness for ranking evaluation is further validated by co
 
 **Table 4.1.4-1. Incremental Improvement across Configurations**
 
-| Metric | V1 â†’ V2 | V2 â†’ V3 | V1 â†’ V3 |
+| Metric | V1 → V2 | V2 → V3 | V1 → V3 |
 | :---- | :---- | :---- | :---- |
 | R@1 | +7.78 | +5.56 | **+13.33** |
 | R@5 | +0.00 | +5.56 | **+5.56** |
 | R@10 | +3.34 | +0.00 | **+3.34** |
 | MRR | +0.0539 | +0.0341 | **+0.0880** |
-| Severe failures | âˆ’3 | 0 | âˆ’3 |
+| Severe failures | −3 | 0 | −3 |
 
-The table above presents the incremental performance improvements across model configurations (V1, V2, and V3). The results show that the largest single gain occurs from V2 to V3, particularly in Recall@1 (+5.56) and Recall@5 (+5.56), indicating that regularization â€” not capacity expansion â€” is the dominant factor in closing the gap to optimal retrieval performance. The V1-to-V2 jump reflects architectural improvements (larger LoRA, category-grouped batching, cosine scheduler), while the V2-to-V3 jump demonstrates that constraining the adapter's capacity with smaller rank and stronger weight decay produces more generalizable features. Overall, the full pipeline improvement from V1 to V3 results in a +13.33 increase in Recall@1 and the best MRR (0.8897) of any configuration, confirming that for small datasets, regularization dominates capacity in LoRA fine-tuning.
+The table above presents the incremental performance improvements across model configurations (V1, V2, and V3). The results show that the largest single gain occurs from V2 to V3, particularly in Recall@1 (+5.56) and Recall@5 (+5.56), indicating that regularization "— not capacity expansion "— is the dominant factor in closing the gap to optimal retrieval performance. The V1-to-V2 jump reflects architectural improvements (larger LoRA, category-grouped batching, cosine scheduler), while the V2-to-V3 jump demonstrates that constraining the adapter's capacity with smaller rank and stronger weight decay produces more generalizable features. Overall, the full pipeline improvement from V1 to V3 results in a +13.33 increase in Recall@1 and the best MRR (0.8897) of any configuration, confirming that for small datasets, regularization dominates capacity in LoRA fine-tuning.
 
 **4.1.5 Rank Distribution Matrix**
 
-The rank-based confusion matrix measures where the correct gallery item landed in the ranked results for its own query. Rows represent true item categories while columns represent rank buckets (\#1, \#2â€“5, \#6â€“10, \#11â€“20, \#21â€“50, \#50+) into which the correct item fell. This reveals where fine-grained confusions actually occur and which categories are hardest to discriminate at the item level.
+The rank-based confusion matrix measures where the correct gallery item landed in the ranked results for its own query. Rows represent true item categories while columns represent rank buckets (\#1, \#2–5, \#6–10, \#11–20, \#21–50, \#50+) into which the correct item fell. This reveals where fine-grained confusions actually occur and which categories are hardest to discriminate at the item level.
 
 ![][image6]
 
@@ -424,7 +424,7 @@ The table above shows the top-10 ranked gallery items returned for the given que
 | Text (Query) | 6.10071383e-02 | 3.98512669e-02 | 2.29415055e-02 | 2.22965106e-02 |
 | Image (Lunchbox 50\) | 1.23840477e-02 | 7.71455690e-02 | 4.46844213e-02 | \-3.43589187e-02 |
 
-The table above presents the L2-normalized 512-dimensional embedding vectors used in the cosine similarity computation for the retrieval demo. The Image row contains the embedding vector produced by the fine-tuned FG-CLIP vision encoder for the target gallery image lunchbox\_050. The Text row contains the embedding vector produced by the fine-tuned FG-CLIP text encoder for the query caption: "Light-grey rectangular lunch box, pale blue latch clips and flap compartment, white oval shaped vent button on lid". Each embedding is a 512-element column vector of floating-point values. Because both vectors are independently L2-normalized to unit length, their dot product reduces directly to a cosine similarity score between âˆ’1 and 1 eliminating the influence of embedding magnitude and ensuring only directional alignment is measured.
+The table above presents the L2-normalized 512-dimensional embedding vectors used in the cosine similarity computation for the retrieval demo. The Image row contains the embedding vector produced by the fine-tuned FG-CLIP vision encoder for the target gallery image lunchbox\_050. The Text row contains the embedding vector produced by the fine-tuned FG-CLIP text encoder for the query caption: "Light-grey rectangular lunch box, pale blue latch clips and flap compartment, white oval shaped vent button on lid". Each embedding is a 512-element column vector of floating-point values. Because both vectors are independently L2-normalized to unit length, their dot product reduces directly to a cosine similarity score between −1 and 1 eliminating the influence of embedding magnitude and ensuring only directional alignment is measured.
 
 **Cosine Similarity**
 
@@ -435,13 +435,13 @@ The table above presents the L2-normalized 512-dimensional embedding vectors use
 | 1st | 6.10071383e-02 | 1.23840477e-02 | \+0.000756 |
 | 2nd | 3.98512669e-02 | 7.71455690e-02 | \+0.003074 |
 | 3rd | 2.29415055e-02 | 4.46844213e-0 | \+0.001025 |
-| â€¦ | â€¦ | â€¦ | â€¦ |
+| "… | "… | "… | "… |
 | 512th | 2.22965106e-02 | 7.83427339e-03 | \+0.000175 |
 | **Sum of all 512 dot products** |  |  | **0.3693  Similarity Score** |
 
 		
 
-The table above shows the final similarity score of 0.3693 between the query text and lunchbox\_050. For each of the 512 positions, the number from the Image vector is multiplied by the number at the same position in the Text vector, producing a Product. The sum of all 512 products is the cosine similarity. When the two numbers at the same position have the same sign (both positive or both negative), their product is positive and pushes the total upward. When they have opposite signs, the product is negative and pulls the total downward. This demonstrates that CLIP does not rely on any single dimension to make its decision and instead the correct match comes from small contributions across all 512 dimensions. As a result, the model retrieves lunchbox\_050 at rank \#4 among all gallery items, meaning the query's description â€œlight-grey body, pale blue latch clips, flap compartment, and oval vent buttonâ€ aligns closely with lunchbox\_50's learned features.
+The table above shows the final similarity score of 0.3693 between the query text and lunchbox\_050. For each of the 512 positions, the number from the Image vector is multiplied by the number at the same position in the Text vector, producing a Product. The sum of all 512 products is the cosine similarity. When the two numbers at the same position have the same sign (both positive or both negative), their product is positive and pushes the total upward. When they have opposite signs, the product is negative and pulls the total downward. This demonstrates that CLIP does not rely on any single dimension to make its decision and instead the correct match comes from small contributions across all 512 dimensions. As a result, the model retrieves lunchbox\_050 at rank \#4 among all gallery items, meaning the query's description "light-grey body, pale blue latch clips, flap compartment, and oval vent button" aligns closely with lunchbox\_50's learned features.
 
 **4.2**
 
@@ -451,7 +451,7 @@ The table above shows the final similarity score of 0.3693 between the query tex
 
 This study focused on the development of an automated multimodal lost-and-found system designed for campus environments, integrating both image-to-image and text-to-image retrieval to improve the accuracy and efficiency of item recovery. The system addresses the limitations of traditional manual and text-based lost-and-found processes, as well as the shortcomings of earlier image-only retrieval systems, which often struggle with visual variability and lack support for textual queries.
 
-The proposed framework combines MobileNetV2 for image-to-image retrieval and FG-CLIP for text-to-image retrieval, both operating within a shared embedding-based retrieval pipeline. For FG-CLIp, parameter-efficient fine-tuning was implemented using Low-Rank Adaptation (LoRA), enabling adaptation to a domain specific dataset while preserving pretrained knowledge and minimizing computational cost. The dataset consists of 600 image pairs (1,200 images total), covering six object categories: Bags, Chargers, Handkerchief, Lunchboxes, Tumblers and Wallets. Each captions generated using a controlled attribute taxonomy to support fine-grained textual alignment, the dataset was split into 70% training, 15% validation and 15% testing to ensure balanced evaluation across all categories. To improve discrimination between visually and semantically similar items, the training process incorporated hard-negative captions and category-grouped batch sampling. This forced the model to distinguish between near-identical intra-class items rather than relying on coarse category-level cues. Additionally augmentation techniques such as color jittering, random flipping, and random erasing were applied to improve robustness against real-world variations in lightning, orientation, and occlusion. Three LoRA-based configurations (V1, V2, and V3) were evaluated to study the impact of architectural and training refinements. Results showed consistent improvements across configurations, with V3 achieving the best overall performance, including 84.44% Recall@1, 96.67% Recall@5, 0.8897 MRR, and the fewest severe failures (3). These improvements demonstrate that on small datasets, regularization â€” not capacity â€” is the dominant factor: halving LoRA rank (r=32â†’16) combined with ten times stronger weight decay (0.01â†’0.1) produces more generalizable adapters than larger, less-regularized ones.
+The proposed framework combines MobileNetV2 for image-to-image retrieval and FG-CLIP for text-to-image retrieval, both operating within a shared embedding-based retrieval pipeline. For FG-CLIp, parameter-efficient fine-tuning was implemented using Low-Rank Adaptation (LoRA), enabling adaptation to a domain specific dataset while preserving pretrained knowledge and minimizing computational cost. The dataset consists of 600 image pairs (1,200 images total), covering six object categories: Bags, Chargers, Handkerchief, Lunchboxes, Tumblers and Wallets. Each captions generated using a controlled attribute taxonomy to support fine-grained textual alignment, the dataset was split into 70% training, 15% validation and 15% testing to ensure balanced evaluation across all categories. To improve discrimination between visually and semantically similar items, the training process incorporated hard-negative captions and category-grouped batch sampling. This forced the model to distinguish between near-identical intra-class items rather than relying on coarse category-level cues. Additionally augmentation techniques such as color jittering, random flipping, and random erasing were applied to improve robustness against real-world variations in lightning, orientation, and occlusion. Three LoRA-based configurations (V1, V2, and V3) were evaluated to study the impact of architectural and training refinements. Results showed consistent improvements across configurations, with V3 achieving the best overall performance, including 84.44% Recall@1, 96.67% Recall@5, 0.8897 MRR, and the fewest severe failures (3). These improvements demonstrate that on small datasets, regularization "— not capacity "— is the dominant factor: halving LoRA rank (r=32→16) combined with ten times stronger weight decay (0.01→0.1) produces more generalizable adapters than larger, less-regularized ones.
 
 Overall, the system demonstrates that combining parameter-efficient fine-tuning, hard-negative mining, and structured multimodal training significantly enhances retrieval accuracy in a constrained dataset setting. The results confirm that the proposed approach is effective for real-world campus lost-and-found applications, offering both high retrieval precision and computational efficiency suitable for deployment.
 
@@ -477,7 +477,7 @@ The experimental results across V1, V2, and V3 show a consistent improvement in 
 
 The result that V3 had with fewer trainable parameters than V2 achieved the best overall retrieval performance. This suggests that on small datasets, LoRA adapters benefit more from regularization than from capacity expansion. The relatively modest improvement from V2 to V3 compared to the larger jump from V1 to V2 might reflect diminishing returns from further optimization at this dataset scale. The use of hard-negative mining and category-grouped batch sampling strengthens these results by forcing the model to discriminate between visually similar items within the same category. This is reflected in the low number of severe retrieval failures and the high Recall@10 scores, showing that even when the top prediction is incorrect, the correct item is still consistently retrieved within a small candidate set.
 
-Overall, the results confirm that combining LoRA-based parameter-efficient adaptation with structured hard-negative learning procedures a robust retrieval system that performs well in fineâ€“grained, real-world lost-and-found scenarios while remaining computationally lightweight.
+Overall, the results confirm that combining LoRA-based parameter-efficient adaptation with structured hard-negative learning procedures a robust retrieval system that performs well in fine–grained, real-world lost-and-found scenarios while remaining computationally lightweight.
 
 **5.3 Recommendations**
 
