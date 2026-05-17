@@ -9,8 +9,8 @@
     📦 Transformers:    4.57.1
     📦 PEFT Version:    0.19.1
     🚀 GPU:             NVIDIA GeForce RTX 3050 Laptop GPU
-    💾 Max VRAM Used:   3.76 GB
-    🎲 Global Seed:     3599252448700
+    💾 Max VRAM Used:   3.83 GB
+    🎲 Global Seed:     14307441325600
 
 [2] MODEL & DATASET
     🤖 Base Model ID:       qihoo360/fg-clip-base
@@ -24,14 +24,14 @@
     📊 Trainable Params:    2,949,120 (1.9330% of total)
     🧠 LoRA Rank (r):       24
     🧠 LoRA Alpha:          48
-    🎯 Target Modules:      {'k_proj', 'q_proj', 'out_proj', 'v_proj'}
+    🎯 Target Modules:      {'v_proj', 'q_proj', 'out_proj', 'k_proj'}
     💧 Dropout:             0.1
     🧮 Model dtype:         torch.float32
 
 [4] HYPERPARAMETERS & TRAINING
     ⚙️  Optimizer:           AdamW
     📉 Start Learn Rate:    3e-05
-    📉 End Learn Rate:      0.0
+    📉 End Learn Rate:      3e-05
     ⚓ Weight Decay:        0.15
     🎢 Betas (B1, B2):      (0.9, 0.999)
     🔢 Optimizer Epsilon:   1e-08
@@ -41,12 +41,12 @@
     📦 Val Batch Size:      16
     👷 Dataloader Workers:  0
     📈 Total Steps:         540
-    🔥 Warmup Steps:        162 (Cosine Scheduler)
+    🔥 Warmup Steps:        54 (Cosine Scheduler)
 
 [5] TRAINING RESULTS
-    📉 Train Loss (at Stop): 0.4214
-    📉 Val Loss (at Stop):   1.1300
-    🏆 Best Val Loss:        1.1283 (Model Saved Here!)
+    📉 Train Loss (at Stop): 0.3934
+    📉 Val Loss (at Stop):   0.7984
+    🏆 Best Val Loss:        0.7984 (Model Saved Here!)
     🏁 Stopped at Epoch:     20 / 20
     🛑 Early Stop Patience:  15 epochs
 

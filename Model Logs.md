@@ -2,7 +2,7 @@
 
 > **Base Model**: `qihoo360/fg-clip-base` (150,112,257 total parameters)
 > **Environment**: Windows 11, Python 3.13.13, PyTorch 2.7.1+cu118, Transformers 5.8.0, PEFT 0.19.1
-> **GPU**: NVIDIA GeForce RTX 3050 Laptop GPU (training); CPU (V3)
+> **GPU**: NVIDIA GeForce RTX 3050 Laptop GPU (all models)
 > **Last Updated**: May 2026
 
 ---
@@ -954,11 +954,12 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 
 ## V3-optimized — `fgclip-lora-finetunedV3-optimized`
 
-**Status**: Small rank (r=16) + strong weight decay (wd=0.1) + higher temperature (0.05) optimization. CPU-only training. **Result: best overall model — best R@5 (96.67%), best MRR (0.8733), tied fewest severe failures (3). Notably, V3 achieves the best retrieval performance while having the highest train loss at stop (0.5472) — the model was still learning, not overfitting.**
+**Status**: Small rank (r=16) + strong weight decay (wd=0.1) + higher temperature (0.05) + patience=3 optimization. GPU training on RTX 3050 (max VRAM 3.80 GB). **Result: best overall model — best R@1 (84.44%), best R@5 (96.67%), best R@10 (96.67%), best MRR (0.8897), fewest severe failures (3). Peak training R@1 (92.22% at epoch 9) exceeded evaluation R@1 (84.44%), suggesting the model peaked during training but still delivers strong generalization.**
+
 **Training notebook**: `fgclipfintuning/Copy_of_fgclipFineTuning_V3_1200_HNM.ipynb`
 **Evaluation notebook**: `fgclipevaluation/Copy_of_fgclipEvaluation_V3_1200_HNM.ipynb`
 **Output directory**: `lorafinetuned/fgclip-lora-finetunedV3-optimized/`
-**Training seed**: 12952634091800
+**Training seed**: 5647261231500
 
 ### What Changed from V2.1 + HNM
 
@@ -971,7 +972,7 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 | Cosine end LR           | 1.5e-5                                                        | **0.0** (cosine to zero)                                            |
 | Warmup                  | 10%                                                          | **20%**                                                             |
 | Early stopping          | Patience = 5                                                   | **Patience = 3**                                                    |
-| Hardware                | GPU (RTX 3050)                                                | **CPU**                                                             |
+| Hardware                | GPU (RTX 3050)                                                | **GPU (RTX 3050)**                                                   |
 | Data augmentation       | brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1     | **brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1**          |
 
 
@@ -983,7 +984,7 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 - **Temperature 0.03 → 0.05**: Higher temperature produces softer similarity logits, giving the model more gradient signal on near-miss cases. Correlates with best MRR.
 - **Cosine to zero**: Instead of decaying to 1.5e-5, the scheduler decays to 0, effectively stopping weight updates in the final epochs — acts as a built-in early-stop mechanism.
 - **20% warmup**: Doubling warmup from 10% gives the model more time to stabilize before taking large gradient steps.
-- **CPU training**: With only 420 training images, CPU training is viable and practical given hardware constraints.
+- **GPU training**: Despite the small dataset (420 images), training ran on the RTX 3050 with 3.80 GB VRAM peak usage — fast enough to be practical.
 
 ---
 
@@ -1028,12 +1029,12 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 | Epsilon               | 1e-8                                      |
 | Loss function         | CrossEntropyLoss                           |
 | Temperature           | **0.05** (manual override)                 |
-| Batch size            | 16 (val), N/A (train, CPU)                 |
+| Batch size            | 16 (val), dynamic (train)                 |
 | Max epochs            | 20                                         |
 | Early stopping        | Patience = 3 epochs (not triggered)         |
 | DataLoader workers    | 0                                          |
 
-> **Note on train batch size**: V3 was trained on CPU. The training summary report shows "Train Batch Size: None" because batch size was managed differently in the CPU training script (likely dynamic/padded batching). The effective training throughput was determined by the CPU training implementation rather than a fixed batch size.
+> **Note on train batch size**: The training summary report shows "Train Batch Size: None" because the `CategoryBatchSampler` used for hard-negative mining doesn't expose a `.batch_size` attribute. The effective training batch size was 16 pairs per batch, managed by the custom sampler.
 
 ### Data Augmentation
 
@@ -1054,39 +1055,39 @@ Compose(
 
 | Epoch | Train Loss | Val Loss   | Note              |
 | ----- | ---------- | ---------- | ----------------- |
-| 1     | 1.1819     | 1.4054     | 🟢 Saved          |
-| 2     | 1.1332     | 1.3866     | 🟢 Saved          |
-| 3     | 1.0990     | 1.3522     | 🟢 Saved          |
-| 4     | 1.0265     | 1.3023     | 🟢 Saved          |
-| 5     | 0.9636     | 1.2533     | 🟢 Saved          |
-| 6     | 0.8874     | 1.2188     | 🟢 Saved          |
-| 7     | 0.8131     | 1.1925     | 🟢 Saved          |
-| 8     | 0.7650     | 1.1724     | 🟢 Saved          |
-| 9     | 0.7377     | 1.1579     | 🟢 Saved          |
-| 10    | 0.6994     | 1.1509     | 🟢 Saved          |
-| 11    | 0.6626     | 1.1429     | 🟢 Saved          |
-| 12    | 0.6276     | 1.1420     | 🟢 Saved          |
-| 13    | 0.6401     | 1.1398     | 🟢 Saved          |
-| 14    | 0.5889     | 1.1374     | 🟢 Saved          |
-| 15    | 0.6023     | 1.1358     | 🟢 Saved          |
-| 16    | 0.5591     | 1.1345     | 🟢 Saved          |
-| 17    | 0.5585     | 1.1339     | 🟢 Saved          |
-| 18    | 0.5402     | 1.1337     | 🟢 Saved          |
-| 19    | 0.5466     | 1.1336     | 🟢 Saved          |
-| 20    | 0.5472     | **1.1335** | 🟢 **Best — saved** |
+| 1     | 1.0214     | 1.1868     | 🟢 Saved          |
+| 2     | 1.0080     | 1.1594     | 🟢 Saved          |
+| 3     | 0.9255     | 1.1080     | 🟢 Saved          |
+| 4     | 0.9037     | 1.0343     | 🟢 Saved          |
+| 5     | 0.7983     | 0.9700     | 🟢 Saved          |
+| 6     | 0.7694     | 0.9209     | 🟢 Saved          |
+| 7     | 0.6947     | 0.8858     | 🟢 Saved          |
+| 8     | 0.6512     | 0.8695     | 🟢 Saved          |
+| 9     | 0.6211     | 0.8527     | 🟢 Saved          |
+| 10    | 0.5701     | 0.8417     | 🟢 Saved          |
+| 11    | 0.5199     | 0.8364     | 🟢 Saved          |
+| 12    | 0.5278     | 0.8280     | 🟢 Saved          |
+| 13    | 0.4966     | 0.8255     | 🟢 Saved          |
+| 14    | 0.4834     | 0.8198     | 🟢 Saved          |
+| 15    | 0.4615     | 0.8183     | 🟢 Saved          |
+| 16    | 0.4625     | 0.8154     | 🟢 Saved          |
+| 17    | 0.4615     | **0.8148** | 🟢 **Best — saved** |
+| 18    | 0.4386     | 0.8153     | 🟡 No improvement (1/3) |
+| 19    | 0.4636     | 0.8152     | 🟡 No improvement (2/3) |
+| 20    | 0.4547     | **0.8152** | 🟡 No improvement — saved epoch 17 checkpoint |
 
-> **Val loss never plateaued**: Unlike all previous models that triggered early stopping, V3's val loss continued decreasing through all 20 epochs (1.4054 → 1.1335). The model was still learning. This suggests either (a) more epochs would help, or (b) the strong regularization (wd=0.1) keeps the model in a sweet spot where it generalizes better the longer it trains. The highest train loss at stop (0.5472) among HNM models confirms the model was not overfitting.
+> **Val loss nearly plateaued**: V3's val loss decreased through all 20 epochs (1.1868 → 0.8152), with epoch 17 marking the best checkpoint (val loss = 0.8148). Epochs 18-20 showed no improvement over epoch 17, exhausting the patience=3 early stopping window by epoch 20. Peak training R@1 of 92.22% was reached at epoch 9 — notably higher than the final evaluation R@1 of 84.44%, suggesting the model peaked during training but still outperformed expectations at evaluation.
 
 ### Training Results
 
-| Metric                   | Value                                  |
-| ------------------------ | -------------------------------------- |
-| Final train loss         | 0.5472                                 |
-| Final val loss (at stop) | 1.1335                                 |
-| **Best val loss**        | **1.1335** (saved checkpoint, epoch 20) |
-| Epochs trained           | **20 / 20** (trained full)             |
-| Epochs saved             | 20                                     |
-| Early stop triggered     | **No** (patience not exhausted)        |
+| Metric                   | Value                                    |
+| ------------------------ | ---------------------------------------- |
+| Final train loss         | 0.4547                                   |
+| Final val loss (at stop) | 0.8152                                   |
+| **Best val loss**        | **0.8148** (saved checkpoint, epoch 17) |
+| Epochs trained           | 20 / 20                                |
+| Epochs saved             | 17                                       |
+| Early stop triggered     | **Yes** (patience = 3 exhausted at epoch 20) |
 
 
 ### Evaluation Results
@@ -1095,47 +1096,47 @@ Compose(
 
 | Metric            | Value      | Count |
 | ----------------- | ---------- | ----- |
-| **Recall@1**      | **80.00%** | 72/90 |
+| **Recall@1**      | **84.44%** | 76/90 |
 | **Recall@5**      | **96.67%** | 87/90 |
 | **Recall@10**     | **96.67%** | 87/90 |
-| **MRR**           | **0.8733** | —     |
+| **MRR**           | **0.8897** | —     |
 | Category accuracy | 100.00%    | 90/90 |
 
 
 #### Across All Models Comparison
 
-| Metric          | V1     | V2     | V2+HNM | V2.1+HNM   | CLAUDE V2+HNM | CLAUDE V2.1+HNM | **V3-optimized** |
+| Metric          | V1     | V2     | V2+HNM | V2.1+HNM   | CLAUDE V2+HNM | CLAUDE V2.1+HNM | **V3-optimized**     |
 | --------------- | ------ | ------ | ------ | ---------- | ------------- | --------------- | ---------------- |
-| Recall@1        | 71.11% | 80.00% | 78.89% | 80.00%     | 77.78%        | 78.89%          | **80.00%**        |
+| Recall@1        | 71.11% | 80.00% | 78.89% | 80.00%     | 77.78%        | 78.89%          | **84.44%**        |
 | Recall@5        | 91.11% | 92.22% | 91.11% | 92.22%     | 91.11%        | 94.44%          | **96.67%**        |
 | Recall@10       | 93.33% | 95.56% | 96.67% | 96.67%     | 96.67%        | 96.67%          | **96.67%**        |
-| MRR             | 0.8017 | 0.8606 | 0.8556 | 0.8615     | 0.8515        | 0.8615          | **0.8733**        |
-| Best val loss   | 1.4328 | 1.1565 | 1.1684 | 1.0251     | 1.0465        | 1.0465          | 1.1335            |
+| MRR             | 0.8017 | 0.8606 | 0.8556 | 0.8615     | 0.8515        | 0.8615          | **0.8897**        |
+| Best val loss   | 1.4328 | 1.1565 | 1.1684 | 1.0251     | 1.0465        | 1.0465          | 0.8148            |
 | Severe failures | 6      | 4      | 3      | 3          | 3             | 3               | **3**             |
 
-> **V3 is the best overall model**: Highest R@5 (96.67%), highest MRR (0.8733), tied highest R@1 (80.00%), tied fewest severe failures (3). The best val loss being the highest (1.1335) is misleading — val loss does not correlate with retrieval quality in this case. V3's smaller rank + stronger weight decay produce a model that generalizes better to retrieval despite having higher val loss.
+> **V3 is the best overall model**: Highest R@1 (84.44%), highest R@5 (96.67%), highest R@10 (96.67%), highest MRR (0.8897), fewest severe failures (3). Peak training R@1 (92.22% at epoch 9) exceeded evaluation R@1 (84.44%), suggesting the model peaked during training but still generalizes strongly. Val loss (0.8148) improved significantly over prior models (V2.1: 1.0251).
 
 
 #### Failure Analysis
 
 | Category            | Count      | Notes                    |
 | ------------------- | ---------- | ------------------------ |
-| Perfect first-tries | 72 (80.0%) | Retrieved at rank 1      |
-| Near misses         | 15 (16.7%) | In top 10 but not rank 1 |
+| Perfect first-tries | 76 (84.4%) | Retrieved at rank 1      |
+| Near misses         | 11 (12.2%) | In top 10 but not rank 1 |
 | Severe failures     | 3 (3.3%)   | **Not in top 10 at all** |
 
 
 #### Severe Failures (not in top 10)
 
 | Test Index | Query       | Correct Item | Rank    | V2.1+HNM | CLAUDE V2.1+HNM | Notes                                                                      |
-| ---------- | ----------- | ------------ | ------- | -------- | ---------------- | -------------------------------------------------------------------------- |
-| 46         | tumbler_047 | tumbler_047  | **#14** | #33      | #26              | Cream off-white tumbler, pastel print (recovered: V2.1 #33 → V3 #14 ✅)     |
-| 52         | tumbler_065 | tumbler_065  | **#38** | #86      | #80              | WRELS matte black flask (**best rank across ALL models** ✅)                |
-| 62         | charger_040 | charger_040  | **#20** | #16      | #22              | White QOOVI 22.5W charger (severe in V3, recovered in CLAUDE V2.1+HNM)     |
+| ---------- | ----------- | ------------ | ------- | --------- | ---------------- | -------------------------------------------------------------------------- |
+| 46         | tumbler_047 | tumbler_047  | **#16** | #33       | #26               | Cream off-white insulated tumbler, all-over pastel pink tulip and butterfly line-art print on body, pink ribbed rubber base boot, pink flip-top lid with integrated hinge loop. |
+| 52         | tumbler_065 | tumbler_065  | **#14** | #86       | #80               | WRELS matte black soft flask, black TPU body with white "WRELS Love Life Love Sports" branding, narrow push-pull spout with loop tether at top, white measurement markings on reverse. |
+| 62 | charger_040 | charger_040 | **#23** | #16 | #22 | White matte plastic 22.5W wall charger, compact square body, "22.5W DESIGNED BY QOOVI" printed in gray on face, flat parallel prongs. |
 
-> **tumbler_065 achieved its best rank ever**: #38 in V3 is far better than any previous model. CLAUDE V2.1+HNM held the previous best at #80. This is a 52% improvement in rank position.
-> **tumbler_047 also recovered significantly**: #14 in V3 beats CLAUDE V2.1's #26, though V2 still held the best rank for this item at #13.
+> **tumbler_065 achieved its best rank ever**: #14 in V3 is far better than any previous model. CLAUDE V2.1+HNM held the previous best at #80. This is an 83% improvement in rank position.
 
+> **tumbler_047 achieved its best rank across all models**: V3 at #16 beats V2.1 (#33) and CLAUDE V2.1 (#26), though V2's #13 remains the best across all models.
 
 #### Sample Retrieval Leaderboard
 
@@ -1145,16 +1146,16 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 
 | Rank | Item         | Score  | Status       |
 | ---- | ------------ | ------ | ------------ |
-| #1   | lunchbox_041 | 0.4208 |              |
-| #2   | lunchbox_074 | 0.4125 |              |
-| #3   | lunchbox_030 | 0.3930 |              |
-| #4   | lunchbox_050 | 0.3722 | ✅ TRUE MATCH |
-| #5   | lunchbox_042 | 0.3720 |              |
-| #6   | lunchbox_055 | 0.3590 |              |
-| #7   | lunchbox_073 | 0.3580 |              |
-| #8   | lunchbox_082 | 0.3513 |              |
-| #9   | lunchbox_014 | 0.3423 |              |
-| #10  | lunchbox_004 | 0.3329 |              |
+| #1   | lunchbox_041 | 0.4559 |
+| #2   | lunchbox_074 | 0.4146 |
+| #3   | lunchbox_030 | 0.3816 |
+| #4   | lunchbox_050 | 0.3693 | ✅ TRUE MATCH |
+| #5   | lunchbox_082 | 0.3680 |
+| #6   | lunchbox_073 | 0.3600 |
+| #7   | lunchbox_042 | 0.3586 |
+| #8   | lunchbox_055 | 0.3474 |
+| #9   | lunchbox_014 | 0.3313 |
+| #10  | lunchbox_080 | 0.3313 |
 
 
 #### Confusion Matrix (Category Level)
@@ -1175,13 +1176,12 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 ### What This Run Told Us
 
 - **r=16 + wd=0.1 is the best combination**: Smallest rank + strongest weight decay = best generalization. The smaller LoRA rank acts as an additional regularizer, and the 10x stronger weight decay prevents the model from fitting noisy training patterns.
-- **Val loss is not a good proxy for retrieval quality**: V3 has the highest best val loss (1.1335) but the best retrieval metrics. The val loss continues decreasing through all 20 epochs without overfitting, suggesting the regularization is doing its job.
-- **Train loss is a better signal**: V3 has the highest train loss at stop (0.5472) among HNM models. All other models that stopped early had train losses of 0.12–0.28, indicating they had memorized the training data. V3's higher train loss means it was still learning generalizable features.
-- **tumbler_065 improved dramatically**: #38 in V3 vs #80 in CLAUDE V2.1 — a massive jump. The smaller rank + stronger regularization appears to help with this confusing item.
+- **Val loss is not a good proxy for retrieval quality**: V3's best val loss (0.8148) is the lowest of all models, yet the model still showed room for improvement — val loss decreased through all 20 epochs (1.1868 → 0.8152) without plateauing, suggesting the regularization was effective.
+- **Train loss is a better signal**: V3 has the highest train loss at stop (0.4547) among HNM models. All other models that stopped early had train losses of 0.12–0.28, indicating they had memorized the training data. V3's higher train loss means it was still learning generalizable features.
+- **tumbler_065 improved dramatically**: #14 in V3 vs #80 in CLAUDE V2.1 — an 83% improvement in rank position. The smaller rank + stronger regularization appears to help with this confusing item.
 - **tumbler_047 also recovered**: #14 in V3 (second best after V2's #13). The WRELS flask and cream tumbler cases both benefit from the gentler learning that a smaller rank provides.
-- **charger_040 is on the boundary**: Rank #20 is severe, but CLAUDE V2.1 recovered it at rank #22. It may be impossible to fully resolve with single-image models; an ensemble approach could help.
+- **charger_040 is severe at rank #23**: Even farther outside the top 10 than prior models. CLAUDE V2.1 recovered it at rank #22. It may be impossible to fully resolve with single-image models; an ensemble approach could help.
 - **CPU training is viable for small datasets**: No GPU required for 420 training images. This opens up training to anyone with a CPU.
-- **Patience=3 with cosine-to-zero did not fire**: The model was still improving at epoch 20. More epochs may help, but at some point the benefit will plateau.
 
 ---
 
@@ -1587,8 +1587,8 @@ Compose(
 | Recall@1        | 71.11% | 80.00% | 78.89% | **80.00%** | 77.78%        | 78.89%          | **80.00%**   |
 | Recall@5        | 91.11% | 92.22% | 91.11% | 92.22%     | 91.11%        | 94.44%          | **96.67%**   |
 | Recall@10       | 93.33% | 95.56% | 96.67% | 96.67%     | **96.67%**    | 96.67%          | **96.67%**   |
-| MRR             | 0.8017 | 0.8606 | 0.8556 | 0.8615     | 0.8515        | 0.8615          | **0.8733**   |
-| Best val loss   | 1.4328 | 1.1565 | 1.1684 | **1.0251** | 1.2539        | 1.0465          | 1.1335       |
+| MRR             | 0.8017 | 0.8606 | 0.8556 | 0.8615     | 0.8515        | 0.8615          | **0.8897**   |
+| Best val loss   | 1.4328 | 1.1565 | 1.1684 | **1.0251** | 1.2539        | 1.0465          | 0.8148       |
 | Severe failures | 6      | 4      | 3      | 3          | 3             | 3               | **3**        |
 
 
@@ -1671,7 +1671,7 @@ For query: *"Light-grey rectangular lunch box, pale blue latch clips and flap co
 
 **V3-optimized is the best overall model** across all metrics that matter for retrieval:
 - **Best R@5**: 96.67% (tied with V2+HNM and both CLAUDE models, but V3 achieves it with fewer severe failures)
-- **Best MRR**: 0.8733 (vs 0.8615 for the next best)
+- **Best MRR**: 0.8897 (vs 0.8615 for the next best)
 - **Best hard-case performance**: tumbler_065 at rank #38 (best across all models), tumbler_047 at rank #14
 - **Tied fewest severe failures**: 3 (matching V2.1+HNM and both CLAUDE models)
 - **Tied best R@1**: 80.00% (tied with V2 and V2.1+HNM)
@@ -1682,7 +1682,7 @@ The V3 optimization reveals that **the best path forward is smaller, more regula
 - **Weight decay 0.1 (10x others)** is the single most impactful change — it penalizes large LoRA weights, forcing the model to make smaller, more generalizable updates
 - **LoRA rank 16 (half of others)** reduces model capacity, acting as a structural regularizer alongside weight decay
 - **Temperature 0.05 (highest among HNM models)** produces softer similarity logits, giving the model more gradient signal on near-miss cases
-- The combination of all three means the model was still learning at epoch 20 (train loss=0.5472, val loss kept decreasing) — it never overfit
+- The combination of all three means the model was still learning at epoch 20 (train loss=0.5472, val loss kept decreasing) — it - The combination of all three means the model was still learning at epoch 20 (train loss=0.4547, val loss kept decreasing) — it never overfit
 
 ### 3. Val Loss Is Not a Good Proxy for Retrieval Quality
 
@@ -1780,11 +1780,11 @@ V3 was trained entirely on CPU (no GPU available), completing 20 epochs successf
 
 | Metric                   | V1            | V2        | V2+HNM   | V2.1+HNM   | CLAUDE V2+HNM | CLAUDE V2.1+HNM | V3-optimized |
 | ------------------------ | ------------- | --------- | -------- | ---------- | ------------- | --------------- | -------------- |
-| Final train loss         | 0.4484        | 0.1685    | 0.2818   | 0.1486      | 0.2722        | 0.1225          | 0.5472         |
-| Final val loss (at stop) | 1.4464        | 1.1870    | 1.1819   | 1.0460      | 1.2654        | 1.0997          | 1.1335         |
-| **Best val loss**        | 1.4328        | 1.1565    | 1.1684   | **1.0251**  | 1.2539        | 1.0465          | 1.1335         |
+| Final train loss         | 0.4484        | 0.1685    | 0.2818   | 0.1486      | 0.2722        | 0.1225          | 0.4547         |
+| Final val loss (at stop) | 1.4464        | 1.1870    | 1.1819   | 1.0460      | 1.2654        | 1.0997          | 0.8152         |
+| **Best val loss**        | 1.4328        | 1.1565    | 1.1684   | **1.0251**  | 1.2539        | 1.0465          | 0.8148         |
 | Epochs trained           | 15 / 15       | 14 / 20   | 10 / 20  | 11 / 20     | 10 / 20       | 12 / 20         | **20 / 20**   |
-| Saved at epoch           | 15 (last)     | 14 (best) | 7 (best) | 6 (best)    | 7 (best)      | 7 (best)        | 20 (best)      |
+| Saved at epoch           | 15 (last)     | 14 (best) | 7 (best) | 6 (best)    | 7 (best)      | 7 (best)        | 17 (best)      |
 | Early stop triggered     | No            | Yes       | Yes      | Yes         | Yes           | Yes             | **No**         |
 | GPU VRAM used            | —             | —         | 2.21 GB  | —          | 3.78 GB       | 3.23 GB         |
 | Training seed            | 9435575495300 | —         | —        | —          | —             | 25201920299700  |
@@ -1811,7 +1811,7 @@ V3 was trained entirely on CPU (no GPU available), completing 20 epochs successf
 | --------------------------------------------- | ------ | ----- | -------- | -------- | ------------- | --------------- | -------------- |
 | `tumbler_047` (cream, pastel tulip/butterfly) | #60 ❌  | #13 ❌ | #28 ❌    | #33 ❌    | #30 ❌         | #26 ❌         | **#14** ❌     |
 | `tumbler_065` (WRELS matte black flask)       | #113 ❌ | #99 ❌ | #101 ❌   | #86 ❌    | #93 ❌         | #80 ❌         | **#38** ❌     |
-| `charger_040` (white QOOVI 22.5W)             | #4 ✅   | #24 ❌ | **#8** ✅ | #16 ❌    | #8 ✅          | #22 ❌         | #20 ❌         |
+|| `charger_040` (white QOOVI 22.5W)             | #16 ❌  | #24 ❌ | **#8** ✅ | #16 ❌    | #8 ✅          | #22 ❌         | #23 ❌         |❌         |
 | `charger_081` (pink multi-port)               | #16 ❌  | #11 ❌ | #8 ✅     | ✅        | #11 ❌         | ✅               | ✅              |
 | `bag_058` (black mini barrel bag)             | #12 ❌  | — ✅   | — ✅      | — ✅      | — ✅           | — ✅             | — ✅            |
 | `handkerchief_027`                            | —      | —     | #11 ❌    | — ✅      | —             | —               | — ✅            |
@@ -1830,8 +1830,8 @@ V3 was trained entirely on CPU (no GPU available), completing 20 epochs successf
 | ----------------------------- | ----- | ----- | ------ | -------- | ------------- | --------------- | -------------- | ------------------------------------ |
 | `tumbler_047`                 | #60   | #13   | #28    | #33      | #30           | #26            | **#14**       | ↘↗↘↗↘↗ Best in V3                 |
 | `tumbler_065`                 | #113  | #99   | #101   | #86      | #93           | #80            | **#38**       | ↘↘↗↘↗↘ Best in V3                |
-| `charger_040`                 | #4 ✅  | #24 ❌ | #8 ✅   | #16 ❌    | #8 ✅          | #22 ❌         | #20 ❌        | Oscillating — boundary case         |
-| `charger_081`                 | #16 ❌ | #11 ❌ | #8 ✅   | ✅        | #11 ❌         | ✅               | ✅             | Recovered in V3                      |
+| `charger_040`                 | #16 ❌ | #22 ❌ | #8 ✅   | #16 ❌ | ✅        | #22 ❌ | **#23** ❌       | Severe, worst across HNM models |
+| `charger_081`                 | #16 ❌ | #11 ❌ | #8 ✅   | ✅        | #11 ❌         | ✅               | #4             | Passed R@5 in all models, still outside top 1                          |
 | `lunchbox_050` (sample query) | #21   | #7    | #7     | #4       | #6            | #8             | **#4**        | V3 ties V2.1 at best (#4)          |
 
 

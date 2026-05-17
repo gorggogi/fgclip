@@ -16,33 +16,33 @@
     📏 Max Text Length: 77 tokens
 
 [4] 🏆 FINAL RETRIEVAL METRICS 🏆
-    🥇 Recall@1:        82.22%
-    🥈 Recall@5:        96.67%
+    🥇 Recall@1:        81.11%
+    🥈 Recall@5:        95.56%
     🥉 Recall@10:       96.67%
-    📈 MRR:             0.8854
+    📈 MRR:             0.8748
 
 [5] 📉 FAILURE ANALYSIS SUMMARY
-    🎯 Perfect First-Tries: 74 queries (82.2%) - Nailed it at Rank 1
-    🤏 Near Misses:         13 queries (14.4%) - Found in top 10, but missed Rank 1
+    🎯 Perfect First-Tries: 73 queries (81.1%) - Nailed it at Rank 1
+    🤏 Near Misses:         14 queries (15.6%) - Found in top 10, but missed Rank 1
     💥 Severe Failures:      3 queries (3.3%) - Failed to find in top 10
     -------------------------------------------------------------------------
     Total Test Queries:     90 queries
 
-    📦 Category Accuracy:   100.00% (90 queries guessed the correct object type)
+    📦 Category Accuracy:   97.78% (88 queries guessed the correct object type)
 
 [6] 📋 SAMPLE RETRIEVAL LEADERBOARD
     🔍 Query: "Light-grey rectangular lunch box, pale blue latch clips and flap compartment, white oval shaped vent button on lid"
 
     Rank   Item Name                      Score      Status
     ------------------------------------------------------------
-    #1     lunchbox_074                   0.4162   📍 Top-1
-    #2     lunchbox_041                   0.4045   📍 Top-2
-    #3     lunchbox_030                   0.3762   📍 Top-3
-    #4     lunchbox_050                   0.3653   ✅ TRUE MATCH
-    #5     lunchbox_042                   0.3575   📍 Top-5
-    #6     lunchbox_082                   0.3542   📍 Top-6
-    #7     lunchbox_055                   0.3489   📍 Top-7
-    #8     lunchbox_014                   0.3463   📍 Top-8
-    #9     lunchbox_073                   0.3350   📍 Top-9
-    #10    lunchbox_004                   0.3308   📍 Top-10
+    #1     lunchbox_041                   0.4644   📍 Top-1
+    #2     lunchbox_074                   0.4290   📍 Top-2
+    #3     lunchbox_082                   0.3847   📍 Top-3
+    #4     lunchbox_030                   0.3807   📍 Top-4
+    #5     lunchbox_050                   0.3780   ✅ TRUE MATCH
+    #6     lunchbox_080                   0.3503   📍 Top-6
+    #7     lunchbox_042                   0.3498   📍 Top-7
+    #8     lunchbox_055                   0.3483   📍 Top-8
+    #9     lunchbox_073                   0.3410   📍 Top-9
+    #10    lunchbox_014                   0.3303   📍 Top-10
 ================================================================================
