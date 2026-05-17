@@ -3,7 +3,7 @@
 > **Status**: Expanded LoRA (r=32, all 4 attention projections) + category-grouped batching + cosine scheduler + strict temperature (0.02) + patience=3 early stopping. GPU training on RTX 3050 (max VRAM 3.80 GB). Early stopped at epoch 10. **Result: R@1 78.89%, R@5 91.11%, R@10 96.67%, MRR 0.8556, 3 severe failures. Strong improvement over V1 across all metrics.**
 
 > **Base Model**: `qihoo360/fg-clip-base` (149,620,737 total parameters)
-> **Environment**: Windows 11, Python 3.14, PyTorch 2.7.1+cu118, Transformers 5.8.0, PEFT 0.19.1
+> **Environment**: Windows 10, Python 3.13.3, PyTorch 2.6.0+cu124, Transformers 4.57.1, PEFT 0.19.1
 > **GPU**: NVIDIA GeForce RTX 3050 Laptop GPU
 > **Training notebook**: `fgclipfintuning/Copy_of_fgclipFineTuning_V2_1200_HNM.ipynb`
 > **Evaluation notebook**: `fgclipevaluation/Copy_of_fgclipEvaluation_V2_1200_HNM.ipynb`
@@ -36,7 +36,7 @@
 | LoRA rank (r)     | 8                      | **32**                                                  |
 | LoRA alpha (α)    | 16                     | **64**                                                  |
 | Target modules    | q_proj, v_proj         | **q_proj, k_proj, v_proj, out_proj**                    |
-| Temperature       | ~0.07 (model default)  | **0.02** (manual override)                              |
+| Temperature       | **0.0122** (auto-scaled by HF logit) | **0.02** (manual override)                |
 | Optimizer         | AdamW, lr=5e-5         | AdamW, lr=5e-5                                          |
 | Scheduler         | None                   | **Cosine with warmup (10% of 540 steps)**               |
 | Cosine end LR     | N/A                    | **0.0** (decays to zero)                                |
@@ -127,8 +127,6 @@ RandomErasing(p=0.3, scale=(0.02, 0.15))
 ToPILImage()
 )
 
-> **Note**: ColorJitter parameters not recorded in this notebook run. See V3 for explicit brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1.
-
 ---
 
 ## Training Loss Curve
@@ -161,9 +159,9 @@ ToPILImage()
 | Final val loss (at stop) | 1.1819                                       |
 | **Best val loss**        | **1.1684** (saved checkpoint, epoch 7)       |
 | Epochs trained           | 10 / 20                                      |
-| Epochs saved             | 7                                            |
+| Epoch saved             | 7                                            |
 | Early stop triggered     | **Yes** (patience = 3 exhausted at epoch 10) |
-| Peak VRAM                | 3.80 GB                                      |
+| Peak VRAM                | 3.78 GB                                      |
 
 
 ---

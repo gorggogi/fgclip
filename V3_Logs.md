@@ -14,7 +14,7 @@
 
 ## Table of Contents
 
-1. [What Changed from V2.1 + HNM](#what-changed-from-v21--hnm)
+1. [What Changed from V2 + HNM](#what-changed-from-v2--hnm)
 2. [Why These Changes](#why-these-changes)
 3. [Training Methodology](#training-methodology)
 4. [Architecture](#architecture)
@@ -28,18 +28,18 @@
 
 ---
 
-## What Changed from V2.1 + HNM
+## What Changed from V2
 
 
-| Aspect            | V2.1 + HNM                                            | V3-optimized                                              |
+| Aspect            | V2 + HNM                                             | V3-optimized                                              |
 | ----------------- | ----------------------------------------------------- | --------------------------------------------------------- |
 | LoRA rank (r)     | 32                                                    | **16**                                                    |
-| LoRA alpha (α)    | 128                                                   | **32**                                                    |
+| LoRA alpha (α)    | 64                                                    | **32**                                                    |
 | Weight decay      | 0.01                                                  | **0.1** (10x stronger)                                    |
-| Temperature       | 0.03                                                  | **0.05**                                                  |
-| Cosine end LR     | 1.5e-5                                                | **0.0** (cosine to zero)                                  |
+| Temperature       | 0.02                                                  | **0.05**                                                  |
+| Cosine end LR     | 0.0                                                   | **0.0** (cosine to zero)                                  |
 | Warmup            | 10%                                                   | **20%**                                                   |
-| Early stopping    | Patience = 5                                          | **Patience = 3**                                          |
+| Early stopping    | Patience = 3                                          | **Patience = 3**                                          |
 | Hardware          | GPU (RTX 3050)                                        | **GPU (RTX 3050)**                                        |
 | Data augmentation | brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1 | **brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1** |
 
@@ -168,7 +168,7 @@ ToPILImage()
 | Final val loss (at stop) | 0.8152                                       |
 | **Best val loss**        | **0.8148** (saved checkpoint, epoch 17)      |
 | Epochs trained           | 20 / 20                                      |
-| Epochs saved             | 17                                           |
+| Epoch saved             | 17                                           |
 | Early stop triggered     | **Yes** (patience = 3 exhausted at epoch 20) |
 | Peak VRAM                | 3.80 GB                                      |
 
@@ -250,13 +250,12 @@ ToPILImage()
 | Category      | R@1 Correct | Wrong at R@1 (true -> AI guess, rank)                                       |
 | :------------ | :---------- | :-------------------------------------------------------------------------- |
 | Bag           | 13         | bag_058->tumbler_007 (#4), bag_071->bag_070 (#2)                           |
-| Charger       | 10         | charger_038->charger_030 (#4), charger_040->charger_064 (#23), charger_071->charger_070 (#5), charger_081->charger_070 (#4), charger_083->charger_071 (#2) |
+| Charger       | 10         | charger_038->charger_030 (#4), charger_071->charger_070 (#5), charger_081->charger_070 (#4), charger_083->charger_071 (#2)                          |
 | Handkerchief  | 12         | handkerchief_027->handkerchief_079 (#5), handkerchief_035->handkerchief_087 (#2), handkerchief_062->handkerchief_098 (#2) |
 | Lunchbox      | 14         | lunchbox_050->lunchbox_041 (#4)                                            |
 | Tumbler       | 12         | tumbler_047->tumbler_045 (#16), tumbler_065->tumbler_027 (#14), tumbler_084->tumbler_086 (#2) |
 | Wallet        | 15         | —                                                                          |
 
-> **Note:** When the model retrieves charger_030 instead of charger_040, it is still a "correct" category prediction (Charger -> Charger) even though the item-level R@1 is wrong (#23 instead of #1). The confusion matrix at rank 1 tracks category-level accuracy, while this table tracks exact item-level accuracy.
 
 
 ### Confusion Matrix (Category Level)

@@ -26,7 +26,7 @@ W' \= W+(a/r) BA
 
 While Rank (r) controls the dimensions of the subspace, Alpha (a) controls the magnitude of the adaptation. A higher a gives the LoRA update more influence over the final output, while a lower a conserves the original weights. 
 
-When applied to the study’s experimental configuration, the efficiency of this approach was demonstrated clearly. The FG-CLIP base architecture has a total of 150,112,257 parameters. Through LoRA, our configuration only required updating roughly 0.5 million to 4 million parameters which represents only 0.33% to 2.56% of the entire architecture. This prevents the neural network from severely overfitting to the small dataset while preserving the model’s pretrained knowledge.
+When applied to the study's experimental configuration, the efficiency of this approach was demonstrated clearly. The FG-CLIP base architecture has a total of 149,620,737 parameters. Through LoRA, the configurations tested required updating only roughly 0.49 million to 3.93 million parameters which represents only 0.33% to 2.63% of the entire architecture. This prevents the neural network from severely overfitting to the small dataset while preserving the model's pretrained knowledge.
 
 2. **Dataset and Data Preparation**   
      
@@ -36,7 +36,7 @@ When applied to the study’s experimental configuration, the efficiency of this
      
    The dataset was partitioned as follows  
    :  
-   **Table 2.1-1. Data Split per Category (Train–Validation–Test)**
+   **Table 2.1-1. Data Split per Category (Trainâ€“Validationâ€“Test)**
 
 | Category | Total Pairs | Train (70%) | Validation (15%) | Test (15%) |
 | :---- | :---- | :---- | :---- | :---- |
@@ -85,7 +85,7 @@ An intersection rule was introduced to control which attributes appear in the po
 
 Training images pass through augmentation pipeline to simulate the variability of of typical user-submitted lost and found photographs:
 
-* Resize to 224 × 224  
+* Resize to 224 Ã— 224  
 * Random horizontal flip: simulates different viewing angles and orientations  
 * Color jitter: changes brightness, contrast, saturation, and hue to account for camera and lighting variation  
 * Random erasing: randomly masks a rectangular region, preventing over-reliance on a single salient feature (e.g., a brand logo) and encouraging the model to leverage shape, texture, and material cues holistically
@@ -107,7 +107,7 @@ Training images pass through augmentation pipeline to simulate the variability o
 
    	**Phase 1: Grouping**  
    	  
-   All 420 training pairs are partitioned by their category, extracted from the image filename (e.g “tumbler\_47” → “tumbler”). This produces six lists, one per category (Bags, Chargers, Tumblers, Wallets, Handkerchiefs, Lunchboxes) each containing 70 indices.  
+   All 420 training pairs are partitioned by their category, extracted from the image filename (e.g â€œtumbler\_47â€ â†’ â€œtumblerâ€). This produces six lists, one per category (Bags, Chargers, Tumblers, Wallets, Handkerchiefs, Lunchboxes) each containing 70 indices.  
      
    ![][image1]  
      
@@ -123,7 +123,7 @@ Training images pass through augmentation pipeline to simulate the variability o
      
    **Pseudocode 3.1-2. List Chunking Internal Logic**  
      
-   The figure below shows the internal logic behind stage 2\. The chunking loop takes each category’s shuffled index list and steps through it in increments of batch\_size, producing sublists of that length. The line if lex(chunk) \> 1 drops any remainder smaller than a full batch.
+   The figure below shows the internal logic behind stage 2\. The chunking loop takes each category's shuffled index list and steps through it in increments of batch\_size, producing sublists of that length. The line if lex(chunk) \> 1 drops any remainder smaller than a full batch.
 
    	**Phase 3: Interleaving**
 
@@ -151,17 +151,17 @@ Training images pass through augmentation pipeline to simulate the variability o
 
    **ViT-B/16 vision encoder \+ transformer text encoder**
 
-   Each batch contains N images, N positive captions, and N hard-negative captions (2N total text descriptions). Both streams are encoded simultaneously via the LoRA-adapted FG-CLIP model’s dual-stream encoder architecture (ViT-B/16 vision encoder \+ transformer text encoder) which was described in detail in Section 3 of the main paper.
+   Each batch contains N images, N positive captions, and N hard-negative captions (2N total text descriptions). Both streams are encoded simultaneously via the LoRA-adapted FG-CLIP model's dual-stream encoder architecture (ViT-B/16 vision encoder \+ transformer text encoder) which was described in detail in Section 3 of the main paper.
 
    **LoRA integration**
 
-   LoRA adapters are injected into the attention projection matrices q\_proj, k\_proj, v\_proj, and out\_proj of every transformer layer in both the vision and text encoders. For each frozen weight matrix W  ℝd x k, two trainable matrices A  ℝr x kand B  ℝd x r are introduced. During the forward pass, the output is:
+   LoRA adapters are injected into the attention projection matrices q\_proj, k\_proj, v\_proj, and out\_proj of every transformer layer in both the vision and text encoders. For each frozen weight matrix W  â„d x k, two trainable matrices A  â„r x kand B  â„d x r are introduced. During the forward pass, the output is:
 
    W'(x)=Wx+ar  BAx
 
    **Equation 3\. Lora Forward Pass**
 
-   where W is the frozen pre-trained weight matrix, B and A are the two trainable low-rank matrices, α controls how strongly the LoRA update influences the output, and r is the rank of the low-rank subspace.
+   where W is the frozen pre-trained weight matrix, B and A are the two trainable low-rank matrices, Î± controls how strongly the LoRA update influences the output, and r is the rank of the low-rank subspace.
 
    **Output of Stage 2\.** Two embedding tensors: N normalized image embeddings and 2N normalized text embeddings, each of dimension 512, in the shared FG-CLIP embedding space.
 
@@ -173,7 +173,7 @@ Training images pass through augmentation pipeline to simulate the variability o
 
    **Pseudocode 3.3-1. L2 Normalization**
 
-   The code above illustrates how both image and text embeddings are L2-normalized, they are scaled to have a unit length of 1 so that their dot product directly results in a cosine similarity score between −1 and 1\. This prevents differences in embedding magnitude from affecting similarity scores, only the direction of each embedding vector is considered.
+   The code above illustrates how both image and text embeddings are L2-normalized, they are scaled to have a unit length of 1 so that their dot product directly results in a cosine similarity score between âˆ’1 and 1\. This prevents differences in embedding magnitude from affecting similarity scores, only the direction of each embedding vector is considered.
 
 **Cosine similarity matrix (Training)**
 
@@ -183,27 +183,27 @@ The N x 2N similarity matrix S is computed as the dot product of image and text 
 
 **Equation 4\. Cosine Similarity Matrix During Training** 
 
-Where T is the temperature, i is the row index (image index, i \= 1…N), and j is the column index (caption index, j \= 1…N). The first N entries correspond to the positive captions paired with each image, and the last N entries correspond to the hard negative captions for each image. The temperature T controls how spread out the similarity scores are. A smaller T makes the scores more spread apart, highlighting the differences between similar and dissimilar pairs more sharply, while a larger T compresses all scores closer together, making them more uniform. 
+Where T is the temperature, i is the row index (image index, i \= 1â€¦N), and j is the column index (caption index, j \= 1â€¦N). The first N entries correspond to the positive captions paired with each image, and the last N entries correspond to the hard negative captions for each image. The temperature T controls how spread out the similarity scores are. A smaller T makes the scores more spread apart, highlighting the differences between similar and dissimilar pairs more sharply, while a larger T compresses all scores closer together, making them more uniform. 
 
 The equation above defines how each entry in the N x 2N similarity matrix is computed. Each row represents one image, and each column represents one caption. The dot product measures how aligned the image and text embeddings are, then the result is divided by temperature T to control the sharpness of the similarity distribution. Note that normalization denominator is omitted here because both embeddings are already L2-normalized in Stage 3 (||i\_i|| \= ||t\_j|| \= 1\. The general cosine similarity form with the denominator is given in Equation 3.5 of the main paper document.
 
-After encoding, and normalization, each image has a 512-dimensional embedding e\_img and each caption has a 512-dimensional embedding e\_text. The similarity between a given image and caption is computed as the dot product of their normalized embeddings, scaled by temperature τ:
+After encoding, and normalization, each image has a 512-dimensional embedding e\_img and each caption has a 512-dimensional embedding e\_text. The similarity between a given image and caption is computed as the dot product of their normalized embeddings, scaled by temperature Ï„:
 
 For a positive pair (the correct caption for the image), the similarity might be:
 
 S\_correct \= (0.42)(0.45) \+ (0.38)(0.41) \+ (0.29)(0.32) \+ ... (512 dimensions) \= 0.8231
 
-After dividing by temperature τ \= 0.03, the logit becomes:
+After dividing by temperature Ï„ \= 0.05, the logit becomes:
 
-logit \= 0.8231 / 0.03 \= 27.44
+logit \= 0.8231 / 0.05 \= 16.46
 
 For a hard negative (a caption that differs by one attribute, e.g., dark grey instead of light grey), the same computation results in a lower alignment:
 
 S\_negative \= (0.30)(0.45) \+ (0.25)(0.41) \+ (0.20)(0.32) \+ ... \= 0.6519
 
-logit \= 0.6519 / 0.03 \= 21.73
+logit \= 0.6519 / 0.05 \= 13.04
 
-The positive pair produces a higher logit meaning the model assigns a higher probability to the correct match. The temperature scaling amplifies this difference. A lower temperature like 0.03 produces sharper, more spread-out logits, controlling how strongly the model is penalized for confusing a positive with a hard negative.
+The positive pair produces a higher logit meaning the model assigns a higher probability to the correct match. The temperature scaling amplifies this difference. A lower temperature like 0.05 produces sharper, more spread-out logits, controlling how strongly the model is penalized for confusing a positive with a hard negative.
 
 **Cross Entropy Loss**
 
@@ -213,7 +213,7 @@ The standard CLIP contrastive loss is applied as a symmetric cross entropy over 
 
 **Pseudocode 3.3-2. Contrastive Lost Computation**
 
-The code above shows how the contrastive loss is computed in PyTorch. The labels tensor creates a sequence from 0 to N-1, representing the index of the correct (positive) caption for each image. PyTorch’s CrossEntropyLoss then treats each row as an independent classification problem, where the correct answer is always at the diagonal position. Image 0 should match caption 0, then image 1 should match caption 1 etc. Meanwhile, the hard negative captions occupy the off-diagonal positions. 
+The code above shows how the contrastive loss is computed in PyTorch. The labels tensor creates a sequence from 0 to N-1, representing the index of the correct (positive) caption for each image. PyTorch's CrossEntropyLoss then treats each row as an independent classification problem, where the correct answer is always at the diagonal position. Image 0 should match caption 0, then image 1 should match caption 1 etc. Meanwhile, the hard negative captions occupy the off-diagonal positions. 
 
 **Stage 4: Backpropagation and Weight Update**
 
@@ -232,34 +232,34 @@ AdamW is the optimization algorithm used for adjusting the LoRA matrices after e
 
 	**Learning rate schedule**
 
-Instead of using a fixed learning rate throughout training, the learning rate changes over time in two phases:
+V2 and V3 use a two-phase learning rate schedule instead of a fixed rate:
 
-	**Phase 1: Warmup (first 10% of steps)**
+	**Phase 1: Warmup (first 10% of steps) — V2 and V3 only**
 
 The learning rate starts at 0 and gradually increases to its peak value. At the start of training, the LoRA matrices are near zero, so applying a learning rate immediately could potentially cause unstable updates.
 
-	**Phase 2: Cosine decay (first 10% of steps)**
+	**Phase 2: Cosine decay (remaining 90% of steps) — V2 and V3 only**
 
-The learning rate smoothly decreases from its peak value down to roughly half of the peak. This lets the model make large, confident updates early on to learn quickly, then slowly refine its weights as it gets closer to the best solution
+The learning rate smoothly decreases from its peak value down to zero over the remainder of training. This lets the model make large, confident updates early on to learn quickly, then slowly refine its weights until the learning rate tapers to zero, acting as a built-in early-stop mechanism.
 
 	**Early stopping**
 
-After every training epoch, the model is evaluated on the validation set (with gradients disabled). If the validation loss does not improve for a set number of epochs, the training stops automatically. The LoRA adapter weights that produced the lowest validation loss across all epochs are the ones that are saved using Hugging Face’s PEFT library. The library exports these as two files: adapter\_model.safetensors (the actual weight values) and adapter\_config.json (the configuration). 
+After every training epoch, the model is evaluated on the validation set (with gradients disabled). If the validation loss does not improve for a set number of epochs, the training stops automatically. The LoRA adapter weights that produced the lowest validation loss across all epochs are the ones that are saved using Hugging Face's PEFT library. The library exports these as two files: adapter\_model.safetensors (the actual weight values) and adapter\_config.json (the configuration). 
 
 **Table 3.1-1. Stage Progression Summary**
 
 | Stage | Input | Operation | Output |
 | :---: | ----- | ----- | ----- |
-| 1 | 420 dataset pairs | Random shuffle (default) or Categorical Batch Sampler (hard negative mining) | N image-caption pairs per step  |
+| 1 | 420 dataset pairs | Random shuffle (V1) or Categorical Batch Sampler (V2/V3, hard negative mining) | N image-caption pairs per step  |
 | 2 | N images \+ 2N captions | LoRA-adapted dual-stream encoding (ViT-B/16 \+ text transformer) | N image embeds (512-d) \+ 2N text embeds (512-d) |
-| 3 | All embeddings | L2-normalize → cosine sim → T → CE loss over (N×2N) matrix | Scalar loss  |
-| 4 | Loss scalar | AdamW \+ cosine LR \+ 10% warmup \+ early stopping | LoRA weight updates (ΔW \= BA)  |
+| 3 | All embeddings | L2-normalize â†’ cosine sim â†’ T â†’ CE loss over (NÃ—2N) matrix | Scalar loss  |
+| 4 | Loss scalar | AdamW \+ cosine LR \+ warmup \+ early stopping | LoRA weight updates (Î”W \= BA)  |
 
 The table above illustrates the complete four-stage fine-tuning pipeline. Each stage takes a specific input, performs a defined operation, and produces a defined output that feeds into the next stage. Stages 1 through 4 represent the data flow from raw dataset pairs to updated LoRA weights.
 
 **3.2 Contrastive Loss**
 
-For a batch of N image-caption pairs, the model receives N images alongside 2N text descriptions (N positives \+ N hard negatives). All embeddings are L2-normalized before computing similarity logits. The contrastive loss penalizes the model when a hard-negative description receives a higher similarity score to an image than its correct positive caption. This training setup is consistent with the hard-negative component of FG-CLIP’s pre-training but applied to the campus lost and found domain. 
+For a batch of N image-caption pairs, the model receives N images alongside 2N text descriptions (N positives \+ N hard negatives). All embeddings are L2-normalized before computing similarity logits. The contrastive loss penalizes the model when a hard-negative description receives a higher similarity score to an image than its correct positive caption. This training setup is consistent with the hard-negative component of FG-CLIP's pre-training but applied to the campus lost and found domain. 
 
 **3.3 Categorical Batch Mining (Visual Hard Negatives)** 
 
@@ -280,7 +280,7 @@ Three fine-tuning configurations were developed to trace the impact of each desi
 | Hyperparameter | V1 | V2 | V3 |
 | :---- | :---- | :---- | :---- |
 | LoRA rank (r) | 8 | 32 | **16** |
-| LoRA alpha (α) | 16 | 64 | **32** |
+| LoRA alpha (Î±) | 16 | 64 | **32** |
 | Target modules | qproj, vproj | qproj, kproj, vproj, outproj | qproj, kproj, vproj, outproj |
 | LoRA dropout | 0.1 | 0.1 | 0.1 |
 | Trainable parameters | 491,520 (0.33%) | 3,932,160 (2.56%) | 1,966,080 (1.30%) |
@@ -288,51 +288,51 @@ Three fine-tuning configurations were developed to trace the impact of each desi
 | Optimizer | AdamW | AdamW | AdamW |
 | Learning rate | 5e-5 (fixed) | 5e-5 | **3e-5** |
 | Scheduler | None | Cosine + 10% warmup | Cosine + **20% warmup** |
-| Cosine end LR | N/A | 1.25e-5 | **0.0 (to zero)** |
+| Cosine end LR | N/A | **0.0 (to zero)** | **0.0 (to zero)** |
 | Weight decay | 0.01 | 0.01 | **0.1** |
 | **Loss** | Single-image | Single-image | Single-image |
-| Temperature (τ) | ~0.07 (model default) | 0.02 (fixed) | **0.05 (fixed)** |
+| Temperature (Ï„) | ~0.07 (HF model default) / **0.0122 (auto-scaled during training)** | 0.02 (fixed) | **0.05 (fixed)** |
 | Loss type | Single-image | Single-image | Single-image |
 | Batch size | 16 | 16 | 16 |
 | Batching strategy | Random shuffle | **Category-grouped** | **Category-grouped** |
 | Early stopping | None | Patience = 3 | **Patience = 3** |
 | Max epochs | 15 | 20 | 20 |
-| Color jitter | (brightness=(0.8, 1.2), contrast=None, saturation=None, hue=None) | (brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1) | (brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1) |
+| Color jitter | (brightness=0.2) | (brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1) | (brightness=0.2, contrast=0.2, saturation=0.4, hue=0.1) |
 
 The table above compares the three experimental configurations side by side across all key dimensions: LoRA architecture settings (rank, alpha, target modules), optimizer settings (learning rate, scheduler, weight decay), loss settings (temperature, loss type), and training settings (batch size, batching strategy, early stopping, max epochs, and data augmentation). V1 establishes a conservative baseline. V2 demonstrates the impact of expanded LoRA capacity with category-grouped batching. V3 applies smaller LoRA rank (r=16) with stronger weight decay (0.1) and a higher temperature (0.05) to achieve the best generalization.
 
 **4.1.2 Key Design Decisions**
 
-**V1 → V2: Architecture and Training** 
+**V1 â†’ V2: Architecture and Training** 
 
 V1 established a baseline using conservative LoRA settings (rank 8, q/v projections only, no scheduler, brightness-only augmentation). V2 introduced a suite of changes to the architecture, training procedure, and data pipeline:
 
-**LoRA rank 8 → 32, q/v → q/k/v/out.** Expanding both the rank and target modules gives the adapter significantly more capacity to learn fine-grained visual-textual alignment. Adding kproj and outproj enables the adapter to directly modify the query-key computation which is how the model decides which tokens to attend to rather than only adjusting the value aggregation that follows. This increases trainable parameters from \~0.33% to \~2.56% of the full model.
+**LoRA rank 8 â†’ 32, q/v â†’ q/k/v/out.** Expanding both the rank and target modules gives the adapter significantly more capacity to learn fine-grained visual-textual alignment. Adding kproj and outproj enables the adapter to directly modify the query-key computation which is how the model decides which tokens to attend to rather than only adjusting the value aggregation that follows. This increases trainable parameters from \~0.33% to \~2.56% of the full model.
 
-**Random shuffling → Category-grouped batching.** The custom Categorical Batch Sampler groups pairs by category prefix (e.g. bag\_012 → "bag"). Each category's shuffled index list is chunked into batches of 16\. Every training batch therefore contains 16 pairs from the same category, with all 16 hard negatives being plausible matches for each image, creating a much harder discrimination task than random batching.
+**Random shuffling â†’ Category-grouped batching.** The custom Categorical Batch Sampler groups pairs by category prefix (e.g. bag\_012 â†’ "bag"). Each category's shuffled index list is chunked into batches of 16\. Every training batch therefore contains 16 pairs from the same category, with all 16 hard negatives being plausible matches for each image, creating a much harder discrimination task than random batching.
 
-**Temperature 0.07 → 0.02.** A lower temperature sharpens the softmax distribution, resulting in steeper gradient signals and a stricter penalty for placing probability mass on hard negatives.
+**Temperature 0.07 â†’ 0.02.** A lower temperature sharpens the softmax distribution, resulting in steeper gradient signals and a stricter penalty for placing probability mass on hard negatives.
 
-**Fixed LR → Cosine scheduler with warmup.** A 10% linear warmup period stabilizes early training when the LoRA matrices are near-zero initialization. The cosine decay enables smooth convergence without abrupt learning rate drops.
+**Fixed LR â†’ Cosine scheduler with warmup.** A 10% linear warmup period stabilizes early training when the LoRA matrices are near-zero initialization. The cosine decay enables smooth convergence without abrupt learning rate drops.
 
-* **No early stopping → Patience \= 3\.** Training halts when validation loss fails to improve for three consecutive epochs, preserving the best-generalization checkpoint rather than the final one.  
-* **Brightness-only → Full-spectrum ColorJitter.** V1 only jittered brightness, leaving contrast and saturation invariant. V2 \+ HNM applies brightness, contrast, saturation, and hue jitter, giving a more uniform robustness envelope against real-world lighting variation.  
-* The combined effect was a substantial improvement from V1: \+7.78 on R@1 (71.11% → 78.89%), \+3.34 on R@10 (93.33% → 96.67%), and −3 severe failures (6 → 3).  
+* **No early stopping â†’ Patience \= 3\.** Training halts when validation loss fails to improve for three consecutive epochs, preserving the best-generalization checkpoint rather than the final one.  
+* **Brightness-only â†’ Full-spectrum ColorJitter.** V1 only jittered brightness, leaving contrast and saturation invariant. V2 \+ HNM applies brightness, contrast, saturation, and hue jitter, giving a more uniform robustness envelope against real-world lighting variation.  
+* The combined effect was a substantial improvement from V1: \+7.78 on R@1 (71.11% â†’ 78.89%), \+3.34 on R@10 (93.33% â†’ 96.67%), and âˆ’3 severe failures (6 â†’ 3).  
     
     
-  **V2 → V3: Optimal Regularization**  
+  **V2 â†’ V3: Optimal Regularization**  
 
 
-  While V2 outperformed V1 through expanded LoRA capacity and category-grouped batching, the combination of r=32 with wd=0.01 introduced a slight overfitting tendency: training loss reached 0.1486 while validation loss remained at 1.0251. V3 applies targeted regularization to unlock the best generalization:
+  While V2 outperformed V1 through expanded LoRA capacity and category-grouped batching, the combination of r=32 with wd=0.01 introduced a moderate overfitting tendency: training loss reached 0.2818 while validation loss remained at 1.1819 at epoch 10, compared to best checkpoint at epoch 7 (train loss 0.4608, val loss 1.1684). V3 applies targeted regularization to unlock the best generalization:
 
-* **r = 32 → 16.** Halving the LoRA rank acts as a structural regularizer, reducing the adapter's capacity to memorize training pairs. This forces the model to learn more generalizable visual-text alignments rather than overfitting to specific examples.  
-* **α = 64 → 32.** Keeping α/r constant at 2 maintains the same effective scaling behavior while reducing the absolute magnitude of LoRA updates.  
-* **Weight decay 0.01 → 0.1.** Ten times stronger weight decay penalizes large LoRA weights, encouraging the model to use smaller, more generalizable adaptations. This is the single most impactful change.  
-* **Temperature 0.02 → 0.05.** Higher temperature produces softer similarity logits, giving the model more gradient signal on near-miss cases. This correlates with V3 achieving the best MRR of any configuration.  
-* **Cosine end LR 1.25e-5 → 0.** Decaying to zero instead of a residual LR acts as a built-in early-stop mechanism, stopping weight updates in the final epochs.  
-* **Warmup 10% → 20%.** Doubling warmup from 10% gives the model more time to stabilize before taking large gradient steps.  
-* **Batch size 16 (unchanged).** Unlike V2.1, V3 does not halve the batch size — it keeps 16 hard negatives per step and achieves better results through regularization alone.  
-* The result: V3 achieves the best overall performance — best Recall@1 (84.44%), best Recall@5 (96.67%), best MRR (0.8897), and the fewest severe failures (3) — demonstrating that smaller, better-regularized LoRA adapters outperform larger ones on this dataset.
+* **r = 32 â†’ 16.** Halving the LoRA rank acts as a structural regularizer, reducing the adapter's capacity to memorize training pairs. This forces the model to learn more generalizable visual-text alignments rather than overfitting to specific examples.  
+* **Î± = 64 â†’ 32.** Keeping Î±/r constant at 2 maintains the same effective scaling behavior while reducing the absolute magnitude of LoRA updates.  
+* **Weight decay 0.01 â†’ 0.1.** Ten times stronger weight decay penalizes large LoRA weights, encouraging the model to use smaller, more generalizable adaptations. This is the single most impactful change.  
+* **Temperature 0.02 â†’ 0.05.** Higher temperature produces softer similarity logits, giving the model more gradient signal on near-miss cases. This correlates with V3 achieving the best MRR of any configuration.  
+* **Cosine end LR (both V2 and V3 decay to 0).** Decaying to zero instead of a residual LR acts as a built-in early-stop mechanism, stopping weight updates in the final epochs. V3 further benefits from the 20% warmup combined with this zero-decay strategy, giving the model more time to stabilize before the cosine schedule takes the learning rate to zero.  
+* **Warmup 10% â†’ 20%.** Doubling warmup from 10% gives the model more time to stabilize before taking large gradient steps.  
+* **Batch size 16 (unchanged).** Unlike V2.1, V3 does not halve the batch size â€” it keeps 16 hard negatives per step and achieves better results through regularization alone.  
+* The result: V3 achieves the best overall performance â€” best Recall@1 (84.44%), best Recall@5 (96.67%), best MRR (0.8897), and the fewest severe failures (3) â€” demonstrating that smaller, better-regularized LoRA adapters outperform larger ones on this dataset.
 
 **4.1.3 Retrieval Metrics**
 
@@ -348,7 +348,7 @@ V1 established a baseline using conservative LoRA settings (rank 8, q/v projecti
 
 The table above shows the retrieval performance of all three configurations on the 90-item test set. Recall@1, Recall@5, and Recall@10 measure how often the correct item appears within the top 1, 5, and 10 retrieved results respectively. MRR (Mean Reciprocal Rank) measures the average reciprocal rank of the correct item across all queries, and severe failures count how many test items were not retrieved within the top 10\. V3 achieves the best overall performance with 84.44% R@1, 96.67% R@5, and 0.8897 MRR, outperforming all previous configurations on every retrieval metric. This demonstrates that smaller, more heavily regularized LoRA adapters generalize better on this dataset than larger ones.
 
-The reliance on Recall@K as a primary evaluation metric is supported by recent embedding-based retrieval frameworks. As discussed by Krasnov, 2024, threshold Recall (R@k) serves as an effective measure for determining whether relevant items appear within the top retrieved outputs. By applying an automated evaluation procedure to key architectures on the massive public Wayfair Annotation Dataset (WANDS), Krasnov demonstrated that these systems achieved an R@1000 of 84% (±9%), performing at the level of state-of-the-art (SOTA) models. Although direct score comparison is limited due to the differences in dataset scale and threshold size, the Wayfair Annotation Dataset (WANDS) consists of 480 queries, 42,994 unique products, and over 233,000 human-annotated relevance judgements. Achieving 96.67% Recall@5 demonstrates that the proposed V3 configuration performs at a highly competitive level, successfully ranking relevant items within the strictest, most user-facing retrieval windows.
+The reliance on Recall@K as a primary evaluation metric is supported by recent embedding-based retrieval frameworks. As discussed by Krasnov, 2024, threshold Recall (R@k) serves as an effective measure for determining whether relevant items appear within the top retrieved outputs. By applying an automated evaluation procedure to key architectures on the massive public Wayfair Annotation Dataset (WANDS), Krasnov demonstrated that these systems achieved an R@1000 of 84% (Â±9%), performing at the level of state-of-the-art (SOTA) models. Although direct score comparison is limited due to the differences in dataset scale and threshold size, the Wayfair Annotation Dataset (WANDS) consists of 480 queries, 42,994 unique products, and over 233,000 human-annotated relevance judgements. Achieving 96.67% Recall@5 demonstrates that the proposed V3 configuration performs at a highly competitive level, successfully ranking relevant items within the strictest, most user-facing retrieval windows.
 
 The MRR metric's effectiveness for ranking evaluation is further validated by contemporary dense retrieval systems. Wang et al. (2023) report that SimLM, a state-of-the-art pre-trained dense passage retrieval model, achieves an MRR@10 of 0.411 on the MS MARCO benchmark, the standard large-scale passage ranking dataset containing 6,980 development queries. While direct comparison is limited due to differences in dataset scale (MS MARCO vs. our 90-item domain-focused test set) and domain specificity, the V3 configuration's MRR of 0.8897 demonstrates strong performance on specialized retrieval tasks and validates the effectiveness of our proposed architecture.
 
@@ -356,19 +356,19 @@ The MRR metric's effectiveness for ranking evaluation is further validated by co
 
 **Table 4.1.4-1. Incremental Improvement across Configurations**
 
-| Metric | V1 → V2 | V2 → V3 | V1 → V3 |
+| Metric | V1 â†’ V2 | V2 â†’ V3 | V1 â†’ V3 |
 | :---- | :---- | :---- | :---- |
 | R@1 | +7.78 | +5.56 | **+13.33** |
 | R@5 | +0.00 | +5.56 | **+5.56** |
 | R@10 | +3.34 | +0.00 | **+3.34** |
 | MRR | +0.0539 | +0.0341 | **+0.0880** |
-| Severe failures | −3 | 0 | −3 |
+| Severe failures | âˆ’3 | 0 | âˆ’3 |
 
-The table above presents the incremental performance improvements across model configurations (V1, V2, and V3). The results show that the largest single gain occurs from V2 to V3, particularly in Recall@1 (+5.56) and Recall@5 (+5.56), indicating that regularization — not capacity expansion — is the dominant factor in closing the gap to optimal retrieval performance. The V1-to-V2 jump reflects architectural improvements (larger LoRA, category-grouped batching, cosine scheduler), while the V2-to-V3 jump demonstrates that constraining the adapter's capacity with smaller rank and stronger weight decay produces more generalizable features. Overall, the full pipeline improvement from V1 to V3 results in a +13.33 increase in Recall@1 and the best MRR (0.8897) of any configuration, confirming that for small datasets, regularization dominates capacity in LoRA fine-tuning.
+The table above presents the incremental performance improvements across model configurations (V1, V2, and V3). The results show that the largest single gain occurs from V2 to V3, particularly in Recall@1 (+5.56) and Recall@5 (+5.56), indicating that regularization â€” not capacity expansion â€” is the dominant factor in closing the gap to optimal retrieval performance. The V1-to-V2 jump reflects architectural improvements (larger LoRA, category-grouped batching, cosine scheduler), while the V2-to-V3 jump demonstrates that constraining the adapter's capacity with smaller rank and stronger weight decay produces more generalizable features. Overall, the full pipeline improvement from V1 to V3 results in a +13.33 increase in Recall@1 and the best MRR (0.8897) of any configuration, confirming that for small datasets, regularization dominates capacity in LoRA fine-tuning.
 
 **4.1.5 Rank Distribution Matrix**
 
-The rank-based confusion matrix measures where the correct gallery item landed in the ranked results for its own query. Rows represent true item categories while columns represent rank buckets (\#1, \#2–5, \#6–10, \#11–20, \#21–50, \#50+) into which the correct item fell. This reveals where fine-grained confusions actually occur and which categories are hardest to discriminate at the item level.
+The rank-based confusion matrix measures where the correct gallery item landed in the ranked results for its own query. Rows represent true item categories while columns represent rank buckets (\#1, \#2â€“5, \#6â€“10, \#11â€“20, \#21â€“50, \#50+) into which the correct item fell. This reveals where fine-grained confusions actually occur and which categories are hardest to discriminate at the item level.
 
 ![][image6]
 
@@ -402,18 +402,18 @@ Table 4.1.7-1 presents the pre-annotated test pair used in the qualitative retri
 
 | Rank | Item Name |  Score | Status |
 | ----- | ----- | ----- | ----- |
-| \#1 | lunchbox\_041 | 0.4157 | Top-1 |
-| \#2 | lunchbox\_074 | 0.4100 | Top-2 |
-| \#3 | lunchbox\_030 | 0.3873 | Top-3 |
-| **\#4** | **lunchbox\_050** | **0.3667** | **Correct** |
-| \#5 | lunchbox\_042 | 0.3596 | Top-5 |
-| \#6 | lunchbox\_073 | 0.3554  | Top-6 |
-| \#7 | lunchbox\_055 | 0.3526 | Top-7 |
-| \#8 | lunchbox\_066 | 0.3494 | Top-8 |
-| \#9 | lunchbox\_064 | 0.3456 | Top-9 |
-| \#10 | lunchbox\_007 | 0.3451 | Top-10 |
+| \#1 | lunchbox\_041 | 0.4559 | Top-1 |
+| \#2 | lunchbox\_074 | 0.4146 | Top-2 |
+| \#3 | lunchbox\_030 | 0.3816 | Top-3 |
+| **\#4** | **lunchbox\_050** | **0.3693** | **Correct** |
+| \#5 | lunchbox\_082 | 0.3680 | Top-5 |
+| \#6 | lunchbox\_073 | 0.3600 | Top-6 |
+| \#7 | lunchbox\_042 | 0.3586 | Top-7 |
+| \#8 | lunchbox\_055 | 0.3474 | Top-8 |
+| \#9 | lunchbox\_014 | 0.3313 | Top-9 |
+| \#10 | lunchbox\_080 | 0.3313 | Top-10 |
 
-The table above shows the top-10 ranked gallery items returned for the given query. In this demonstration 10 results received are lunch boxes, and the true match (lunchbox\_050) appears at rank \#4 with a score of 0.3667, meaning it was retrieved correctly even though it landed below the top position. 
+The table above shows the top-10 ranked gallery items returned for the given query. In this demonstration all 10 results are lunch boxes, and the true match (lunchbox\_050) appears at rank \#4 with a score of 0.3693, meaning it was retrieved correctly even though it landed below the top position. The score gap between \#1 (0.4559) and \#4 (0.3693) reflects the inherent difficulty of distinguishing near-identical items from text descriptions alone.
 
 **Embedding Output**
 
@@ -424,7 +424,7 @@ The table above shows the top-10 ranked gallery items returned for the given que
 | Text (Query) | 6.10071383e-02 | 3.98512669e-02 | 2.29415055e-02 | 2.22965106e-02 |
 | Image (Lunchbox 50\) | 1.23840477e-02 | 7.71455690e-02 | 4.46844213e-02 | \-3.43589187e-02 |
 
-The table above presents the L2-normalized 512-dimensional embedding vectors used in the cosine similarity computation for the retrieval demo. The Image row contains the embedding vector produced by the fine-tuned FG-CLIP vision encoder for the target gallery image lunchbox\_050. The Text row contains the embedding vector produced by the fine-tuned FG-CLIP text encoder for the query caption: "Light-grey rectangular lunch box, pale blue latch clips and flap compartment, white oval shaped vent button on lid". Each embedding is a 512-element column vector of floating-point values. Because both vectors are independently L2-normalized to unit length, their dot product reduces directly to a cosine similarity score between −1 and 1 eliminating the influence of embedding magnitude and ensuring only directional alignment is measured.
+The table above presents the L2-normalized 512-dimensional embedding vectors used in the cosine similarity computation for the retrieval demo. The Image row contains the embedding vector produced by the fine-tuned FG-CLIP vision encoder for the target gallery image lunchbox\_050. The Text row contains the embedding vector produced by the fine-tuned FG-CLIP text encoder for the query caption: "Light-grey rectangular lunch box, pale blue latch clips and flap compartment, white oval shaped vent button on lid". Each embedding is a 512-element column vector of floating-point values. Because both vectors are independently L2-normalized to unit length, their dot product reduces directly to a cosine similarity score between âˆ’1 and 1 eliminating the influence of embedding magnitude and ensuring only directional alignment is measured.
 
 **Cosine Similarity**
 
@@ -435,13 +435,13 @@ The table above presents the L2-normalized 512-dimensional embedding vectors use
 | 1st | 6.10071383e-02 | 1.23840477e-02 | \+0.000756 |
 | 2nd | 3.98512669e-02 | 7.71455690e-02 | \+0.003074 |
 | 3rd | 2.29415055e-02 | 4.46844213e-0 | \+0.001025 |
-| … | … | … | … |
+| â€¦ | â€¦ | â€¦ | â€¦ |
 | 512th | 2.22965106e-02 | 7.83427339e-03 | \+0.000175 |
-| **Sum of all 512 dot products** |  |  | **0.3667088357  Similarity Score** |
+| **Sum of all 512 dot products** |  |  | **0.3693  Similarity Score** |
 
 		
 
-The table above shows the final similarity score of 0.3667 between the query text and lunchbox\_050. For each of the 512 positions, the number from the Image vector is multiplied by the number at the same position in the Text vector, producing a Product. The sum of all 512 products is the cosine similarity. When the two numbers at the same position have the same sign (both positive or both negative), their product is positive and pushes the total upward. When they have opposite signs, the product is negative and pulls the total downward. This demonstrates that CLIP does not rely on any single dimension to make its decision and instead the correct match comes from small contributions across all 512 dimensions. As a result, the model retrieves lunchbox\_050 at rank \#4 among all gallery items, meaning the query's description “light-grey body, pale blue latch clips, flap compartment, and oval vent button” aligns closely with lunchbox\_50’s learned features.
+The table above shows the final similarity score of 0.3693 between the query text and lunchbox\_050. For each of the 512 positions, the number from the Image vector is multiplied by the number at the same position in the Text vector, producing a Product. The sum of all 512 products is the cosine similarity. When the two numbers at the same position have the same sign (both positive or both negative), their product is positive and pushes the total upward. When they have opposite signs, the product is negative and pulls the total downward. This demonstrates that CLIP does not rely on any single dimension to make its decision and instead the correct match comes from small contributions across all 512 dimensions. As a result, the model retrieves lunchbox\_050 at rank \#4 among all gallery items, meaning the query's description â€œlight-grey body, pale blue latch clips, flap compartment, and oval vent buttonâ€ aligns closely with lunchbox\_50's learned features.
 
 **4.2**
 
@@ -451,7 +451,7 @@ The table above shows the final similarity score of 0.3667 between the query tex
 
 This study focused on the development of an automated multimodal lost-and-found system designed for campus environments, integrating both image-to-image and text-to-image retrieval to improve the accuracy and efficiency of item recovery. The system addresses the limitations of traditional manual and text-based lost-and-found processes, as well as the shortcomings of earlier image-only retrieval systems, which often struggle with visual variability and lack support for textual queries.
 
-The proposed framework combines MobileNetV2 for image-to-image retrieval and FG-CLIP for text-to-image retrieval, both operating within a shared embedding-based retrieval pipeline. For FG-CLIp, parameter-efficient fine-tuning was implemented using Low-Rank Adaptation (LoRA), enabling adaptation to a domain specific dataset while preserving pretrained knowledge and minimizing computational cost. The dataset consists of 600 image pairs (1,200 images total), covering six object categories: Bags, Chargers, Handkerchief, Lunchboxes, Tumblers and Wallets. Each captions generated using a controlled attribute taxonomy to support fine-grained textual alignment, the dataset was split into 70% training, 15% validation and 15% testing to ensure balanced evaluation across all categories. To improve discrimination between visually and semantically similar items, the training process incorporated hard-negative captions and category-grouped batch sampling. This forced the model to distinguish between near-identical intra-class items rather than relying on coarse category-level cues. Additionally augmentation techniques such as color jittering, random flipping, and random erasing were applied to improve robustness against real-world variations in lightning, orientation, and occlusion. Three LoRA-based configurations (V1, V2, and V3) were evaluated to study the impact of architectural and training refinements. Results showed consistent improvements across configurations, with V3 achieving the best overall performance, including 84.44% Recall@1, 96.67% Recall@5, 0.8897 MRR, and the fewest severe failures (3). These improvements demonstrate that on small datasets, regularization — not capacity — is the dominant factor: halving LoRA rank (r=32→16) combined with ten times stronger weight decay (0.01→0.1) produces more generalizable adapters than larger, less-regularized ones.
+The proposed framework combines MobileNetV2 for image-to-image retrieval and FG-CLIP for text-to-image retrieval, both operating within a shared embedding-based retrieval pipeline. For FG-CLIp, parameter-efficient fine-tuning was implemented using Low-Rank Adaptation (LoRA), enabling adaptation to a domain specific dataset while preserving pretrained knowledge and minimizing computational cost. The dataset consists of 600 image pairs (1,200 images total), covering six object categories: Bags, Chargers, Handkerchief, Lunchboxes, Tumblers and Wallets. Each captions generated using a controlled attribute taxonomy to support fine-grained textual alignment, the dataset was split into 70% training, 15% validation and 15% testing to ensure balanced evaluation across all categories. To improve discrimination between visually and semantically similar items, the training process incorporated hard-negative captions and category-grouped batch sampling. This forced the model to distinguish between near-identical intra-class items rather than relying on coarse category-level cues. Additionally augmentation techniques such as color jittering, random flipping, and random erasing were applied to improve robustness against real-world variations in lightning, orientation, and occlusion. Three LoRA-based configurations (V1, V2, and V3) were evaluated to study the impact of architectural and training refinements. Results showed consistent improvements across configurations, with V3 achieving the best overall performance, including 84.44% Recall@1, 96.67% Recall@5, 0.8897 MRR, and the fewest severe failures (3). These improvements demonstrate that on small datasets, regularization â€” not capacity â€” is the dominant factor: halving LoRA rank (r=32â†’16) combined with ten times stronger weight decay (0.01â†’0.1) produces more generalizable adapters than larger, less-regularized ones.
 
 Overall, the system demonstrates that combining parameter-efficient fine-tuning, hard-negative mining, and structured multimodal training significantly enhances retrieval accuracy in a constrained dataset setting. The results confirm that the proposed approach is effective for real-world campus lost-and-found applications, offering both high retrieval precision and computational efficiency suitable for deployment.
 
@@ -477,15 +477,15 @@ The experimental results across V1, V2, and V3 show a consistent improvement in 
 
 The result that V3 had with fewer trainable parameters than V2 achieved the best overall retrieval performance. This suggests that on small datasets, LoRA adapters benefit more from regularization than from capacity expansion. The relatively modest improvement from V2 to V3 compared to the larger jump from V1 to V2 might reflect diminishing returns from further optimization at this dataset scale. The use of hard-negative mining and category-grouped batch sampling strengthens these results by forcing the model to discriminate between visually similar items within the same category. This is reflected in the low number of severe retrieval failures and the high Recall@10 scores, showing that even when the top prediction is incorrect, the correct item is still consistently retrieved within a small candidate set.
 
-Overall, the results confirm that combining LoRA-based parameter-efficient adaptation with structured hard-negative learning procedures a robust retrieval system that performs well in fine–grained, real-world lost-and-found scenarios while remaining computationally lightweight.
+Overall, the results confirm that combining LoRA-based parameter-efficient adaptation with structured hard-negative learning procedures a robust retrieval system that performs well in fineâ€“grained, real-world lost-and-found scenarios while remaining computationally lightweight.
 
 **5.3 Recommendations**
 
 For immediate implementation, the researchers recommend deploying the Version 2 configuration in production, as it consistently demonstrated superior performance across training stability, validation metrics, and test-set retrieval accuracy. The system should implement hierarchical retrieval by using the perfect category discrimination to first filter items by category, then apply fine-grained matching within each category, reducing computational burden and improving system latency. A human-in-the-loop verification step should be established for top-ranked matches to handle edge cases and provide users with confidence scores alongside results, recognizing that although Version 2 achieves 911.67% Recall@1, some uncertainty remains.
 
-To enhance the model and data, the researchers recommend expanding the current six-item categories to include other items that students usually use in school campuses to increase practical utility while validating generalization to broader object classifications.Collecting 500-1000 image pairs would further improve the model’s robustness, particularly for challenging or visually similar items within each category. Images should be deliberately taken under different conditions such as lighting, camera angles, and background to represent actual user submissions. The current caption structure should also be refined beyond the existing \[Color\] \+ \[Brand/Text\] \+ \[Category\] \+  \[Condition\] format to include additional distinguishing features such as patterns, hardware types, and material specifications.
+To enhance the model and data, the researchers recommend expanding the current six-item categories to include other items that students usually use in school campuses to increase practical utility while validating generalization to broader object classifications.Collecting 500-1000 image pairs would further improve the model's robustness, particularly for challenging or visually similar items within each category. Images should be deliberately taken under different conditions such as lighting, camera angles, and background to represent actual user submissions. The current caption structure should also be refined beyond the existing \[Color\] \+ \[Brand/Text\] \+ \[Category\] \+  \[Condition\] format to include additional distinguishing features such as patterns, hardware types, and material specifications.
 
-For long-term development, the researchers recommend exploring multi-view learning approaches that use multiple images of the same item in different states or configurations (such as open and closed umbrellas, wallets, or bags viewed from different angles) to create more robust embeddings that capture the item’s appearance across real-world conditions. Semantic segmentation integration could combine fine-grained retrieval with segmentation techniques to identify and match specific item components such as zippers, logos, and patterns. Finally, privacy-preserving deployment strategies such as federated learning should be considered if deploying across multiple institutions, allowing each campus to maintain data privacy while benefitting from shared model components.  
+For long-term development, the researchers recommend exploring multi-view learning approaches that use multiple images of the same item in different states or configurations (such as open and closed umbrellas, wallets, or bags viewed from different angles) to create more robust embeddings that capture the item's appearance across real-world conditions. Semantic segmentation integration could combine fine-grained retrieval with segmentation techniques to identify and match specific item components such as zippers, logos, and patterns. Finally, privacy-preserving deployment strategies such as federated learning should be considered if deploying across multiple institutions, allowing each campus to maintain data privacy while benefitting from shared model components.  
 
 
 [image1]: <data:image/png;base64,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>

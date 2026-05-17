@@ -77,17 +77,17 @@
 ## Architecture
 
 
-| Parameter            | Value                                                       |
-| -------------------- | ----------------------------------------------------------- |
-| Base model           | `qihoo360/fg-clip-base`                                     |
-| Vision backbone      | ViT-B/16 (14×14 patch grid, 197 tokens, 768-dim embeddings) |
-| Trainable parameters | **491,520 (0.3275% of total)** |
-| Full model total (base) | **150,112,257** (base 149,620,737 + LoRA 491,520) |
-| LoRA rank (r)        | **8**                                                       |
-| LoRA alpha (α)       | **16**                                                      |
-| Target modules       | `q_proj`, `v_proj`                                          |
-| Dropout              | 0.1                                                         |
-| Model dtype          | `torch.float32`                                             |
+| Parameter               | Value                                                       |
+| ----------------------- | ----------------------------------------------------------- |
+| Base model              | `qihoo360/fg-clip-base`                                     |
+| Vision backbone         | ViT-B/16 (14×14 patch grid, 197 tokens, 768-dim embeddings) |
+| Trainable parameters    | **491,520 (0.3274% of total)**                              |
+| Full model total (base) | **150,112,257** (base 149,620,737 + LoRA 491,520)           |
+| LoRA rank (r)           | **8**                                                       |
+| LoRA alpha (α)          | **16**                                                      |
+| Target modules          | `q_proj`, `v_proj`                                          |
+| Dropout                 | 0.1                                                         |
+| Model dtype             | `torch.float32`                                             |
 
 
 ---
@@ -149,22 +149,22 @@ ToPILImage()
 | 15    | 0.4484     | 1.4464   | Worsened — end |
 
 
-> **Val loss at epoch 12 (not saved)**: Best checkpoint saved at val loss = 1.4328. Epochs 13–15 showed consistent val loss degradation (1.4351 → 1.4454 → 1.4464), confirming the model was beginning to overfit. No early stopping mechanism was in place, so training continued to the full 15 epochs.
+> **Epochs 13–15 showed consistent val loss degradation (1.4351 → 1.4454 → 1.4464), confirming the model was beginning to overfit. No early stopping mechanism was in place, so training continued to the full 15 epochs.
 
 ---
 
 ## Training Results
 
 
-| Metric                  | Value                                   |
-| ----------------------- | --------------------------------------- |
-| Final train loss        | 0.4484                                  |
-| Final val loss (at end) | 1.4464                                  |
-| **Best val loss**       | **1.4328** (epoch 12, not checkpointed) |
-| Epochs trained          | 15 / 15                                 |
+| Metric                  | Value                                    |
+| ----------------------- | ---------------------------------------- |
+| Final train loss        | 0.4484                                   |
+| Final val loss (at end) | 1.4464                                   |
+| **Best val loss**       | **1.4328** (epoch 12, not checkpointed)  |
+| Epochs trained          | 15 / 15                                  |
 | Epochs saved            | 1 (final model, all 15 epochs completed) |
-| Early stop triggered    | **No** (15 fixed epochs completed)      |
-| Peak VRAM               | 3.31 GB                                 |
+| Early stop triggered    | **No** (15 fixed epochs completed)       |
+| Peak VRAM               | 3.31 GB                                  |
 
 
 ---
@@ -213,14 +213,14 @@ ToPILImage()
 > Tracks where the correct item ended up in the ranking, grouped by rank bucket.
 
 
-|               | #1  | #2-5 | #6-10 | #11-20 | #21-50 | #50+ |
-| :------------ | --: | ----: | -----: | ------: | ------: | ---: |
-| Bag           | 12  | 2     | 0      | 1       | 0      | 0    |
-| Charger       |  8  | 6     | 0      | 1       | 0      | 0    |
-| Handkerchief  |  9  | 4     | 1      | 1       | 0      | 0    |
-| Lunchbox      | 10  | 4     | 0      | 1       | 0      | 0    |
-| Tumbler       | 11  | 1     | 1      | 0       | 0      | 2    |
-| Wallet        | 14  | 1     | 0      | 0       | 0      | 0    |
+|              | #1  | #2-5 | #6-10 | #11-20 | #21-50 | #50+ |
+| ------------ | --- | ---- | ----- | ------ | ------ | ---- |
+| Bag          | 12  | 2    | 0     | 1      | 0      | 0    |
+| Charger      | 8   | 6    | 0     | 1      | 0      | 0    |
+| Handkerchief | 9   | 4    | 1     | 1      | 0      | 0    |
+| Lunchbox     | 10  | 4    | 0     | 1      | 0      | 0    |
+| Tumbler      | 11  | 1    | 1     | 0      | 0      | 2    |
+| Wallet       | 14  | 1    | 0     | 0      | 0      | 0    |
 
 
 > **Per-category summary:**
