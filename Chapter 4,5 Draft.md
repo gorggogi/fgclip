@@ -331,7 +331,7 @@ V1 established a baseline using conservative LoRA settings (rank 8, q/v projecti
 * **Temperature 0.02 → 0.05.** Higher temperature produces softer similarity logits, giving the model more gradient signal on near-miss cases. This correlates with V3 achieving the best MRR of any configuration.  
 * **Cosine end LR (both V2 and V3 decay to 0).** Decaying to zero instead of a residual LR acts as a built-in early-stop mechanism, stopping weight updates in the final epochs. V3 further benefits from the 20% warmup combined with this zero-decay strategy, giving the model more time to stabilize before the cosine schedule takes the learning rate to zero.  
 * **Warmup 10% → 20%.** Doubling warmup from 10% gives the model more time to stabilize before taking large gradient steps.  
-* **Batch size 16 (unchanged).** Unlike V2.1, V3 does not halve the batch size "— it keeps 16 hard negatives per step and achieves better results through regularization alone.  
+* **Batch size 16 (unchanged).** V3 does not halve the batch size "— it keeps 16 hard negatives per step and achieves better results through regularization alone.  
 * The result: V3 achieves the best overall performance "— best Recall@1 (84.44%), best Recall@5 (96.67%), best MRR (0.8897), and the fewest severe failures (3) "— demonstrating that smaller, better-regularized LoRA adapters outperform larger ones on this dataset.
 
 **4.1.3 Retrieval Metrics**
